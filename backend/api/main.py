@@ -1,9 +1,6 @@
-# backend/main.py
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-# --- Import all your routers ---
-from .routers import satisfaction_v1, satisfaction_v2
+from .routers import satisfaction_final, satisfaction_v1
 
 # --- App Initialization ---
 app = FastAPI(
@@ -11,7 +8,6 @@ app = FastAPI(
     description="API for predicting customer satisfaction. Includes a baseline V1 and an improved V2 model."
 )
 
-# --- CORS Middleware ---
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:8080"], 
@@ -29,9 +25,9 @@ app.include_router(
     tags=["Satisfaction Prediction V1 (Baseline)"]
 )
 app.include_router(
-    satisfaction_v2.router, 
-    prefix="/satisfaction/v2", 
-    tags=["Satisfaction Prediction V2 (Improved)"]
+    satisfaction_final.router, 
+    prefix="/satisfaction/final", 
+    tags=["Satisfaction Prediction FINAL (XGBoost)"]
 )
 
 # --- Root Endpoint ---

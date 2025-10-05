@@ -6,8 +6,9 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import SatisfactionPredictorV1 from "./pages/SatisfactionPredictor_v1";
-import SatisfactionPredictorV2 from "./pages/SatisfactionPredictor_v2";
+import SatisfactionPredictorFInal from "./pages/SatisfactionPredictor_Final";
 import NotFound from "./pages/NotFound";
+import SatisfactionPredictorFinal from "./pages/SatisfactionPredictor_Final";
 
 const queryClient = new QueryClient();
 
@@ -21,7 +22,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/satisfaction-predictor-v1" element={<SatisfactionPredictorV1 />} />
-            <Route path="/satisfaction-predictor-v2" element={<SatisfactionPredictorV2 />} />
+            <Route path="/satisfaction-predictor-v2" element={<SatisfactionPredictorFinal />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

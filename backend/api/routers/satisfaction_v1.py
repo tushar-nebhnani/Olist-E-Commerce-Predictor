@@ -1,5 +1,3 @@
-# backend/api/routers/satisfaction_v1.py
-
 import joblib
 import pandas as pd
 from fastapi import APIRouter, HTTPException

@@ -1,14 +1,80 @@
+// SatisfactionPredictor_v1.tsx
+import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, TrendingUp, BarChart3 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Brain, TrendingUp, BarChart3, Sparkles, LoaderCircle, AlertTriangle, ThumbsUp, ThumbsDown, ClipboardList } from "lucide-react";
+
+// --- Type for API response ---
+interface PredictionResult {
+  is_satisfied_prediction: number;
+  satisfaction_probability: number;
+}
+
+// --- Hardcoded classification report data for V1 model ---
+const v1Report = {
+  "Not Satisfied (0)": { precision: 0.45, recall: 0.40, "f1-score": 0.42, support: 4984 },
+  "Satisfied (1)": { precision: 0.82, recall: 0.85, "f1-score": 0.84, support: 16522 },
+  "macro avg": { precision: 0.64, recall: 0.63, "f1-score": 0.63, support: 21506 },
+  "weighted avg": { precision: 0.74, recall: 0.75, "f1-score": 0.74, support: 21506 },
+};
 
 const SatisfactionPredictorV1 = () => {
+  // --- State management for form inputs ---
+  const [price, setPrice] = useState(129.90);
+  const [freightValue, setFreightValue] = useState(15.50);
+  const [deliveryTime, setDeliveryTime] = useState(8);
+  const [deliveryDelta, setDeliveryDelta] = useState(10);
+
+  // --- State management for the API call ---
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<PredictionResult | null>(null);
+
+  // --- API call function ---
+  const handlePrediction = async () => {
+    setResult(null);
+    setError(null);
+    setIsLoading(true);
+
+    const requestBody = {
+      price: price,
+      freight_value: freightValue,
+      delivery_time_days: deliveryTime,
+      estimated_vs_actual_delivery: deliveryDelta,
+    };
+
+    try {
+      const response = await fetch('http://localhost:8000/satisfaction/v1/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Network response was not ok');
+      }
+      
+      const data: PredictionResult = await response.json();
+      setResult(data);
+
+    } catch (error: any) {
+      setError(error.message || "An unknown error occurred. Is the backend running?");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
       
       <main className="container mx-auto px-6 pt-24 pb-16">
         <div className="max-w-4xl mx-auto space-y-8">
+          {/* --- Hero Section --- */}
           <div className="text-center space-y-4">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
               <Brain className="w-8 h-8 text-primary" />
@@ -21,6 +87,7 @@ const SatisfactionPredictorV1 = () => {
             </p>
           </div>
 
+          {/* --- Model Overview Card --- */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -28,22 +95,20 @@ const SatisfactionPredictorV1 = () => {
                 Model Overview
               </CardTitle>
               <CardDescription>
-                Version 1.0 - Released Q1 2024
+                Version 1.0.0 
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <h3 className="font-semibold mb-2">Features</h3>
-                <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                  <li>Baseline satisfaction prediction using order data</li>
-                  <li>Linear regression model with key order features</li>
-                  <li>Accuracy: 72% on test dataset</li>
-                  <li>Processing time: ~50ms per prediction</li>
-                </ul>
-              </div>
+            <CardContent>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li>Baseline satisfaction prediction using order data</li>
+                <li>LightGBM model with 4 key order features and SMOTE</li>
+                <li>Accuracy: 74.66% on test dataset</li>
+                <li>Processing time: ~50ms per prediction</li>
+              </ul>
             </CardContent>
           </Card>
 
+          {/* --- Key Metrics Card --- */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -54,26 +119,156 @@ const SatisfactionPredictorV1 = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center p-4 rounded-lg bg-primary/5">
-                  <div className="text-3xl font-bold text-primary">72%</div>
+                  <div className="text-3xl font-bold text-primary">74.66%</div>
                   <div className="text-sm text-muted-foreground mt-1">Accuracy</div>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-primary/5">
-                  <div className="text-3xl font-bold text-primary">0.68</div>
-                  <div className="text-sm text-muted-foreground mt-1">F1 Score</div>
+                  <div className="text-3xl font-bold text-primary">0.74</div>
+                  <div className="text-sm text-muted-foreground mt-1">Weighted F1 Score</div>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-primary/5">
-                  <div className="text-3xl font-bold text-primary">50ms</div>
+                  <div className="text-3xl font-bold text-primary">~50ms</div>
                   <div className="text-sm text-muted-foreground mt-1">Avg Response</div>
                 </div>
               </div>
             </CardContent>
           </Card>
+          
+          {/* --- Model Profile Card --- */}
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Brain className="w-5 h-5 text-primary" />
+                Model Profile
+              </CardTitle>
+              <CardDescription>Strengths and weaknesses of the V1 model.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center text-green-500"><ThumbsUp className="w-4 h-4 mr-2" />Advantages</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                  <li>Fast & Lightweight: Rapid predictions suitable for real-time use.</li>
+                  <li>Good Baseline: Establishes a solid performance benchmark.</li>
+                  <li>Handles Imbalance: The SMOTE pipeline correctly addresses data imbalance.</li>
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center text-red-500"><ThumbsDown className="w-4 h-4 mr-2" />Disadvantages</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                  <li>Low Recall: Fails to identify the majority (60%) of dissatisfied customers.</li>
+                  <li>Limited Features: Model only uses 4 features, likely missing key signals.</li>
+                  <li>Not Tuned: Uses default parameters, which are not optimized.</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
 
-          <div className="p-6 rounded-lg border-2 border-primary/20 bg-primary/5">
-            <p className="text-sm text-center text-muted-foreground">
-              This is a placeholder page. Add your prediction interface and model integration here.
-            </p>
-          </div>
+          {/* --- Classification Report Card --- */}
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ClipboardList className="w-5 h-5 text-primary" />Classification Report</CardTitle>
+              <CardDescription>A detailed breakdown of the model's performance on the test set.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-muted-foreground uppercase bg-primary/5">
+                    <tr>
+                      <th scope="col" className="px-4 py-2 rounded-l-lg">Class</th>
+                      <th scope="col" className="px-4 py-2 text-center">Precision</th>
+                      <th scope="col" className="px-4 py-2 text-center">Recall</th>
+                      <th scope="col" className="px-4 py-2 text-center">F1-Score</th>
+                      <th scope="col" className="px-4 py-2 rounded-r-lg text-center">Support</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(v1Report).map(([key, value]) => (
+                      <tr key={key} className="border-b border-primary/10">
+                        <td className="px-4 py-2 font-semibold capitalize">{key}</td>
+                        <td className="px-4 py-2 text-center">{value.precision.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-center">{value.recall.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-center">{value["f1-score"].toFixed(2)}</td>
+                        <td className="px-4 py-2 text-center text-muted-foreground">{value.support.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* --- Live Prediction Interface Card --- */}
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-primary" />
+                Live Prediction Interface
+              </CardTitle>
+              <CardDescription>
+                Input order details below to get a live satisfaction prediction from the V1 model.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid md:grid-cols-2 gap-8 items-start">
+                {/* Left Column: Form */}
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="price">Price ($)</Label>
+                    <p className="text-sm text-muted-foreground mt-1">The total price of the item(s) in the order.</p>
+                    <Input id="price" type="number" value={price} onChange={e => setPrice(Number(e.target.value))} placeholder="e.g., 129.90" />
+                  </div>
+                  <div>
+                    <Label htmlFor="freight">Freight Value ($)</Label>
+                    <p className="text-sm text-muted-foreground mt-1">The shipping cost for the order.</p>
+                    <Input id="freight" type="number" value={freightValue} onChange={e => setFreightValue(Number(e.target.value))} placeholder="e.g., 15.50" />
+                  </div>
+                  <div>
+                    <Label htmlFor="delivery-time">Delivery Time (days)</Label>
+                    <p className="text-sm text-muted-foreground mt-1">The actual number of days it took to be delivered.</p>
+                    <Input id="delivery-time" type="number" value={deliveryTime} onChange={e => setDeliveryTime(Number(e.target.value))} placeholder="e.g., 8" />
+                  </div>
+                  <div>
+                    <Label htmlFor="delivery-delta">Delivery Delta (days)</Label>
+                    <p className="text-sm text-muted-foreground mt-1">Estimated minus actual delivery. Positive is early, negative is late.</p>
+                    <Input id="delivery-delta" type="number" value={deliveryDelta} onChange={e => setDeliveryDelta(Number(e.target.value))} placeholder="e.g., 10 (early), -2 (late)" />
+                  </div>
+                  <Button onClick={handlePrediction} disabled={isLoading} className="w-full">
+                    {isLoading ? <LoaderCircle className="animate-spin mr-2" /> : null}
+                    {isLoading ? 'Predicting...' : 'Run Prediction'}
+                  </Button>
+                </div>
+
+                {/* Right Column: Result Display */}
+                <div className="min-h-[200px] flex items-center justify-center p-6 rounded-lg bg-primary/5">
+                  {isLoading && <LoaderCircle className="w-12 h-12 text-primary animate-spin" />}
+                  {error && (
+                    <div className="text-center text-destructive">
+                      <AlertTriangle className="mx-auto w-10 h-10 mb-2" />
+                      <p className="font-semibold">Error</p>
+                      <p className="text-sm">{error}</p>
+                    </div>
+                  )}
+                  {result && (
+                    <div className="text-center">
+                      <p className="text-sm text-muted-foreground">Predicted Outcome</p>
+                      <p className={`text-4xl font-bold ${result.is_satisfied_prediction === 1 ? 'text-green-500' : 'text-red-500'}`}>
+                        {result.is_satisfied_prediction === 1 ? 'Satisfied' : 'Not Satisfied'}
+                      </p>
+                      <p className="text-muted-foreground mt-2">
+                        Confidence: <span className="font-semibold text-primary">{(result.satisfaction_probability * 100).toFixed(1)}%</span>
+                      </p>
+                    </div>
+                  )}
+                  {!isLoading && !error && !result && (
+                    <div className="text-center text-muted-foreground">
+                      <p>Prediction results will appear here.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
       </main>
     </div>
