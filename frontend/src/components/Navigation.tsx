@@ -22,6 +22,12 @@ const Navigation = () => {
     { path: "/satisfaction-predictor-v2", label: "Version 2" },
   ];
 
+  const additionalLinks = [
+    { path: "/customer-segmentation", label: "Customer Segmentation" },
+    { path: "/delivery-prediction", label: "Delivery Prediction" },
+    { path: "/eda", label: "EDA" },
+  ];
+
   const isPredictorActive = location.pathname.startsWith("/satisfaction-predictor");
 
   return (
@@ -35,6 +41,21 @@ const Navigation = () => {
         
         <div className="flex items-center space-x-1">
           {navLinks.map((link) => (
+            <Link
+              key={link.path}
+              to={link.path}
+              className={cn(
+                "px-4 py-2 rounded-md text-sm font-medium transition-colors",
+                location.pathname === link.path
+                  ? "text-primary bg-primary/10"
+                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+              )}
+            >
+              {link.label}
+            </Link>
+          ))}
+          
+          {additionalLinks.map((link) => (
             <Link
               key={link.path}
               to={link.path}
