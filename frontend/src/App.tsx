@@ -3,21 +3,25 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import HomePage from "./pages/HomePage";
+import { ThemeProvider } from "next-themes";
+import Index from "./pages/Index";
+import SatisfactionPredictorV1 from "./pages/SatisfactionPredictor_v1";
+import SatisfactionPredictorV2 from "./pages/SatisfactionPredictor_v2";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<HomePage />} />
+            <Route path="/" element={<Index />} />
+            <Route path="/satisfaction-predictor-v1" element={<SatisfactionPredictorV1 />} />
+            <Route path="/satisfaction-predictor-v2" element={<SatisfactionPredictorV2 />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
