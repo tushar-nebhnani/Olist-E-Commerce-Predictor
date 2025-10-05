@@ -1,15 +1,28 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Button } from "@/components/ui/button";
 
 const Navigation = () => {
   const location = useLocation();
 
   const navLinks = [
     { path: "/", label: "Home" },
-    { path: "/satisfaction-predictor-v1", label: "Satisfaction Predictor (V1)" },
-    { path: "/satisfaction-predictor-v2", label: "Satisfaction Predictor (V2)" },
   ];
+
+  const predictorVersions = [
+    { path: "/satisfaction-predictor-v1", label: "Version 1" },
+    { path: "/satisfaction-predictor-v2", label: "Version 2" },
+  ];
+
+  const isPredictorActive = location.pathname.startsWith("/satisfaction-predictor");
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -35,6 +48,44 @@ const Navigation = () => {
               {link.label}
             </Link>
           ))}
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "px-4 py-2 rounded-md text-sm font-medium transition-all group",
+                  isPredictorActive
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
+              >
+                Satisfaction Predictor
+                <ChevronDown className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56 bg-background/95 backdrop-blur-sm border-border/40"
+            >
+              {predictorVersions.map((version) => (
+                <DropdownMenuItem key={version.path} asChild>
+                  <Link
+                    to={version.path}
+                    className={cn(
+                      "cursor-pointer transition-colors",
+                      location.pathname === version.path
+                        ? "text-primary bg-primary/10 font-medium"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {version.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+          
           <div className="ml-2">
             <ThemeToggle />
           </div>

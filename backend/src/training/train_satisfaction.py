@@ -24,9 +24,9 @@ def train_satisfaction_model():
     # --- 2. Load and Prepare Data ---
     print("Step 1 & 2: Loading, merging, and engineering features...")
     try:
-        orders = pd.read_csv(PROCESSED_DATA_PATH / 'orders_cleaned_dataset')
-        reviews = pd.read_csv(PROCESSED_DATA_PATH / 'orders_review_cleaned_dataset')
-        order_items = pd.read_csv(PROCESSED_DATA_PATH / 'order_items_cleaned_dataset')
+        orders = pd.read_parquet(PROCESSED_DATA_PATH / 'olist_orders_cleaned_dataset.parquet')
+        reviews = pd.read_parquet(PROCESSED_DATA_PATH / 'olist_order_reviews_cleaned_dataset.parquet')
+        order_items = pd.read_parquet(PROCESSED_DATA_PATH / 'olist_order_items_cleaned_dataset.parquet')
     except FileNotFoundError as e:
         print(f"Error: {e}. Ensure cleaned files are in '{PROCESSED_DATA_PATH}'.")
         return
