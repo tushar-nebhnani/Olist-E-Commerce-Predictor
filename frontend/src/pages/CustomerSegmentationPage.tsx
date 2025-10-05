@@ -1,5 +1,4 @@
-// src/pages/CustomerSegmentsPage.tsx
-import Navigation from "@/components/Navigation";
+// import Header from "@/components/ui/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, UserPlus, UserX, UserCheck } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, BarChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar } from 'recharts';
@@ -50,10 +49,10 @@ const segmentData = [
 
 const COLORS = ['#8884d8', '#82ca9d', '#ffc658', '#ff8042'];
 
-const CustomerSegmentsPage = () => {
+const CustomerSegmentationPage = () => {
   return (
     <div className="min-h-screen bg-background">
-      <Navigation />
+      <Header />
       
       <main className="container mx-auto px-6 pt-24 pb-16">
         <div className="max-w-6xl mx-auto space-y-12">
@@ -156,4 +155,4 @@ const CustomerSegmentsPage = () => {
   );
 };
 
-export default CustomerSegmentsPage;
+export default CustomerSegmentationPage;
