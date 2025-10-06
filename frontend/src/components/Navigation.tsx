@@ -17,15 +17,16 @@ const Navigation = () => {
     { path: "/", label: "Home" },
   ];
 
+   const additionalLinks = [
+     { path: "/eda", label: "EDA" },
+    { path: "/customer-segmentation", label: "Customer Segmentation" },
+    { path: "/delivery-prediction", label: "Delivery Prediction" },
+   
+  ];
+
   const predictorVersions = [
     { path: "/satisfaction-predictor-v1", label: "Version 1" },
     { path: "/satisfaction-predictor-v2", label: "Version 2" },
-  ];
-
-  const additionalLinks = [
-    { path: "/customer-segmentation", label: "Customer Segmentation" },
-    { path: "/delivery-prediction", label: "Delivery Prediction" },
-    { path: "/eda", label: "EDA" },
   ];
 
   const isPredictorActive = location.pathname.startsWith("/satisfaction-predictor");
