@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import SatisfactionPredictorV1 from "./pages/SatisfactionPredictor_v1";
-import CustomerSegmentsPage  from './pages/CustomerSegmentationPage'; 
+import CustomerSegmentationPage  from './pages/CustomerSegmentationPage'; 
 import NotFound from "./pages/NotFound";
 import SatisfactionPredictorFinal from "./pages/SatisfactionPredictor_Final";
 
@@ -23,7 +23,7 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/satisfaction-predictor-v1" element={<SatisfactionPredictorV1 />} />
             <Route path="/satisfaction-predictor-v2" element={<SatisfactionPredictorFinal />} />
-            <Route path="/customer-segments" element={<CustomerSegmentsPage />} /> 
+            <Route path="/customer-segmentation" element={<CustomerSegmentationPage />} /> 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
