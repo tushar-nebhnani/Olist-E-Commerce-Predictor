@@ -8,6 +8,8 @@ import Index from "./pages/Index";
 import SatisfactionPredictorV1 from "./pages/SatisfactionPredictor_v1";
 import CustomerSegmentationPage  from './pages/CustomerSegmentationPage'; 
 import BusinessPerformancePage from "./pages/BusinessInsightsPage";
+import PurchasePredictorV1 from "./pages/PurchasePredictionV1";
+import PurchasePredictorV2 from "./pages/PurchasePredictionV2";
 import NotFound from "./pages/NotFound";
 import SatisfactionPredictorFinal from "./pages/SatisfactionPredictor_Final";
 
@@ -26,6 +28,8 @@ const App = () => (
             <Route path="/satisfaction-predictor-v2" element={<SatisfactionPredictorFinal />} />
             <Route path="/customer-segmentation" element={<CustomerSegmentationPage />} /> 
             <Route path="/business-insights" element={<BusinessPerformancePage />} /> 
+            <Route path="/purchase-prediction-v1" element={<PurchasePredictorV1 />} /> 
+            <Route path="/purchase-prediction-v2" element={<PurchasePredictorV2 />} /> 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import satisfaction_final, satisfaction_v1
+from .routers import satisfaction_final, satisfaction_v1, purchase_v1, purchase_v2
 
 # --- App Initialization ---
 app = FastAPI(
@@ -10,7 +10,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:5173", "http://localhost:8080"], 
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -28,6 +28,17 @@ app.include_router(
     satisfaction_final.router, 
     prefix="/satisfaction/final", 
     tags=["Satisfaction Prediction FINAL (XGBoost)"]
+)
+
+app.include_router(
+    purchase_v1.router, 
+    prefix="/purchase/v1", 
+    tags=["Purchase Prediction V1 (Baseline)"]
+)
+app.include_router(
+    purchase_v2.router, 
+    prefix="/purchase/v2", 
+    tags=["Purchase Prediction V2 (Advanced)"]
 )
 
 # --- Root Endpoint ---
