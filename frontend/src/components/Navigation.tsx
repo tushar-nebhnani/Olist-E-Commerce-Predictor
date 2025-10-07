@@ -18,7 +18,7 @@ const Navigation = () => {
   ];
 
    const additionalLinks = [
-     { path: "/eda", label: "EDA" },
+    { path: "/business-insights", label: "Business Insights" },
     { path: "/customer-segmentation", label: "Customer Segmentation" },
     { path: "/delivery-prediction", label: "Delivery Prediction" },
    
