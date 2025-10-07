@@ -21,7 +21,8 @@ const Navigation = () => {
     { path: "/business-insights", label: "Business Insights" },
     { path: "/customer-segmentation", label: "Customer Segmentation" },
     { path: "/delivery-prediction", label: "Delivery Prediction" },
-   
+    { path: '/purchase-prediction-v1', label: 'Purchase Predictor V1' },
+    { path: '/purchase-prediction-v2', label: 'Purchase Predictor V2' },
   ];
 
   const predictorVersions = [
