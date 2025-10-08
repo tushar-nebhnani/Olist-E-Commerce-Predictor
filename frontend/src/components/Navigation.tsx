@@ -1,7 +1,8 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Menu } from "lucide-react";
+import { useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,9 +10,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const Navigation = () => {
   const location = useLocation();
+  const [open, setOpen] = useState(false);
 
   const navLinks = [
     { path: "/", label: "Home" },
@@ -20,16 +32,16 @@ const Navigation = () => {
   // Links for the satisfaction predictor dropdown
   const satisfactionVersions = [
     { path: "/satisfaction-predictor-v1", label: "Baseline (V1)" },
-    { path: "/satisfaction-predictor-final", label: "Final (XGBoost)" }, // Updated path and label for final model
+    { path: "/satisfaction-predictor-final", label: "Final (XGBoost)" },
   ];
   
-  // Re-introduced from the older version: Links for the purchase predictor dropdown
+  // Links for the purchase predictor dropdown
   const purchaseVersions = [
     { path: "/purchase-prediction-v1", label: "Baseline Model" },
     { path: "/purchase-prediction-v2", label: "Advanced Model" },
   ];
 
-  // Other top-level links (purchase links removed as they are now in a dropdown)
+  // Other top-level links
   const additionalLinks = [
     { path: "/business-insights", label: "Business Insights" },
     { path: "/customer-segmentation", label: "Customer Segmentation" },
@@ -37,7 +49,6 @@ const Navigation = () => {
   ];
 
   const isSatisfactionActive = location.pathname.startsWith("/satisfaction-predictor");
-  // Re-introduced from the older version: Active state checker for the purchase dropdown
   const isPurchaseActive = location.pathname.startsWith("/purchase-prediction");
 
   return (
@@ -49,7 +60,8 @@ const Navigation = () => {
           </h1>
         </Link>
         
-        <div className="flex items-center space-x-1">
+        {/* Desktop Navigation */}
+        <div className="hidden lg:flex items-center space-x-1">
           {navLinks.map((link) => (
             <Link
               key={link.path}
@@ -117,7 +129,6 @@ const Navigation = () => {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Re-introduced from the older version: Purchase Predictor Dropdown Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -158,6 +169,122 @@ const Navigation = () => {
           <div className="ml-2">
             <ThemeToggle />
           </div>
+        </div>
+
+        {/* Mobile Navigation */}
+        <div className="flex lg:hidden items-center gap-2">
+          <ThemeToggle />
+          
+          <Sheet open={open} onOpenChange={setOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right" className="w-80">
+              <div className="flex flex-col gap-2 mt-8">
+                {navLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "px-4 py-3 rounded-md text-base font-medium transition-colors",
+                      location.pathname === link.path
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                
+                {additionalLinks.map((link) => (
+                  <Link
+                    key={link.path}
+                    to={link.path}
+                    onClick={() => setOpen(false)}
+                    className={cn(
+                      "px-4 py-3 rounded-md text-base font-medium transition-colors",
+                      location.pathname === link.path
+                        ? "text-primary bg-primary/10"
+                        : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+                
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-between px-4 py-3 rounded-md text-base font-medium",
+                        isSatisfactionActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      )}
+                    >
+                      Satisfaction Predictor
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="ml-4 mt-1 space-y-1">
+                    {satisfactionVersions.map((version) => (
+                      <Link
+                        key={version.path}
+                        to={version.path}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "block px-4 py-2 rounded-md text-sm transition-colors",
+                          location.pathname === version.path
+                            ? "text-primary bg-primary/10 font-medium"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        )}
+                      >
+                        {version.label}
+                      </Link>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+
+                <Collapsible>
+                  <CollapsibleTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "w-full justify-between px-4 py-3 rounded-md text-base font-medium",
+                        isPurchaseActive
+                          ? "text-primary bg-primary/10"
+                          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                      )}
+                    >
+                      Purchase Predictor
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className="ml-4 mt-1 space-y-1">
+                    {purchaseVersions.map((version) => (
+                      <Link
+                        key={version.path}
+                        to={version.path}
+                        onClick={() => setOpen(false)}
+                        className={cn(
+                          "block px-4 py-2 rounded-md text-sm transition-colors",
+                          location.pathname === version.path
+                            ? "text-primary bg-primary/10 font-medium"
+                            : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                        )}
+                      >
+                        {version.label}
+                      </Link>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
     </nav>
