@@ -131,10 +131,6 @@ const BusinessInsights = () => {
             </div>
             
             <div className="space-y-3">
-              <Badge variant="secondary" className="mb-2 px-4 py-1">
-                <Sparkles className="w-3 h-3 mr-1 inline" />
-                MasterJi by ChaiCode
-              </Badge>
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 Olist Business Dashboard
               </h1>

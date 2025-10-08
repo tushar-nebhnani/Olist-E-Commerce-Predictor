@@ -1,20 +1,20 @@
 {
-  "buildCommand": "cd frontend && npm run build",
+  "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/dist",
   "builds": [
     {
-      "src": "/backend/main.py",
+      "src": "backend/main.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/backend/(.)",
+      "src": "/api/(.)",
       "dest": "backend/main.py"
     },
     {
       "src": "/(.)",
-      "dest": "frontend/dist/$1"
+      "dest": "frontend/dist/index.html"
     }
   ]
 }
