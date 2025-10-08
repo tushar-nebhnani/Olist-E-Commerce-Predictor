@@ -6,7 +6,6 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
 import SatisfactionPredictorV1 from "./pages/SatisfactionPredictor_v1";
-import CustomerSegmentationPage  from './pages/CustomerSegmentationPage'; 
 import BusinessPerformancePage from "./pages/BusinessInsightsPage";
 import PurchasePredictorV1 from "./pages/PurchasePredictionV1";
 import PurchasePredictorV2 from "./pages/PurchasePredictionV2";
@@ -26,7 +25,6 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/satisfaction-predictor-v1" element={<SatisfactionPredictorV1 />} />
             <Route path="/satisfaction-predictor-v2" element={<SatisfactionPredictorFinal />} />
-            <Route path="/customer-segmentation" element={<CustomerSegmentationPage />} /> 
             <Route path="/business-insights" element={<BusinessPerformancePage />} /> 
             <Route path="/purchase-prediction-v1" element={<PurchasePredictorV1 />} /> 
             <Route path="/purchase-prediction-v2" element={<PurchasePredictorV2 />} /> 
