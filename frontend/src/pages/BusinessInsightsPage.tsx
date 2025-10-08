@@ -5,9 +5,10 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Badge } from "@/components/ui/badge";
 import { 
   DollarSign, MapPin, Star, Truck, ShoppingBag, CreditCard, TrendingUp, Users, Store, 
-  BarChartHorizontal, Clock, CheckCircle, Package, CalendarDays, Hourglass, AlertCircle, Lightbulb, Repeat, Sparkles
+  BarChartHorizontal, Clock, CheckCircle, Package, CalendarDays, Hourglass, AlertCircle, Lightbulb, Repeat, Sparkles, UserX
 } from "lucide-react";
 import Navigation from "@/components/Navigation";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, BarChart, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Bar as RechartsBar } from 'recharts';
 
 // --- Reusable Bar Component for Hover Cards ---
 const Bar = ({ label, value, maxValue, unit = "", colorClass = "bg-primary" }: { label: string, value: number | string, maxValue: number, unit?: string, colorClass?: string }) => {
@@ -111,6 +112,40 @@ const InsightCard = ({ children }: { children: React.ReactNode }) => (
   </Card>
 );
 
+// --- Segmentation Data ---
+const segmentData = [
+  { 
+    name: 'Single-Purchase Core',
+    icon: Users,
+    description: "The vast majority of your customer base. They have made a single purchase and form the foundation of your business.",
+    action: "Encourage a second purchase through targeted follow-ups with related products or introductory offers for new categories.",
+    count: 89280, 
+    recency: 240.3,
+    frequency: 1.0,
+    monetary: 160.9
+  },
+  { 
+    name: 'At-Risk Loyalists',
+    icon: UserX,
+    description: "A small, high-value segment of repeat customers who spend more but have not purchased recently.",
+    action: "Target immediately with 'We miss you!' campaigns and personalized incentives to prevent churn.",
+    count: 2744,
+    recency: 222.4,
+    frequency: 2.11,
+    monetary: 308.45
+  },
+];
+
+const SEGMENT_COLORS = [
+  'hsl(var(--primary))',
+  'hsl(var(--chart-2))',
+];
+
+const SEGMENT_FILLS = [
+  'hsl(var(--primary) / 0.1)',
+  'hsl(var(--chart-2) / 0.1)',
+];
+
 const BusinessInsights = () => {
   return (
     <div className="min-h-screen bg-background">
@@ -131,6 +166,7 @@ const BusinessInsights = () => {
             </div>
             
             <div className="space-y-3">
+
               <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
                 Olist Business Dashboard
               </h1>
@@ -141,7 +177,7 @@ const BusinessInsights = () => {
           </div>
 
           <Tabs defaultValue="overview" className="space-y-8">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto p-1 bg-muted/50 backdrop-blur">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-5 h-auto p-1 bg-muted/50 backdrop-blur">
               <TabsTrigger value="overview" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Overview
               </TabsTrigger>
@@ -153,6 +189,9 @@ const BusinessInsights = () => {
               </TabsTrigger>
               <TabsTrigger value="geography" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
                 Geography
+              </TabsTrigger>
+              <TabsTrigger value="segmentation" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
+                Segmentation
               </TabsTrigger>
             </TabsList>
             
@@ -448,6 +487,142 @@ const BusinessInsights = () => {
                 <div className="space-y-1">
                   <p className="font-semibold text-foreground">💡 Suggestion:</p>
                   <p>Launch geo-targeted marketing campaigns in the top 5 states to maximize wallet share in established markets. To unlock new growth, explore establishing logistics hubs or partnering with sellers in the Northeast (e.g., Bahia - BA) and Central-West to reduce shipping costs and delivery times to those regions, making the platform more attractive to a wider national audience.</p>
+                </div>
+              </InsightCard>
+            </TabsContent>
+
+            <TabsContent value="segmentation" className="space-y-8">
+              {/* Segment Distribution Chart */}
+              <Card className="bg-gradient-to-br from-card to-card/50 backdrop-blur hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:scale-[1.01]">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    <CardTitle>Segment Distribution</CardTitle>
+                  </div>
+                  <CardDescription>The proportion of total customers in each segment.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[300px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={segmentData}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        outerRadius={110}
+                        fill="hsl(var(--primary))"
+                        dataKey="count"
+                        nameKey="name"
+                      >
+                        {segmentData.map((_entry, index) => (
+                          <Cell key={`cell-${index}`} fill={SEGMENT_COLORS[index]} />
+                        ))}
+                      </Pie>
+                      <RechartsTooltip 
+                        formatter={(value) => `${(value as number).toLocaleString()} customers`}
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                      />
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Segment Profiles */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {segmentData.map((segment, index) => (
+                  <Card key={segment.name} className="flex flex-col bg-gradient-to-br from-card to-card/50 backdrop-blur hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:scale-[1.02]">
+                    <CardHeader>
+                      <div className="flex items-center gap-3 mb-2">
+                        <div 
+                          className="p-2 rounded-lg" 
+                          style={{ backgroundColor: SEGMENT_FILLS[index] }}
+                        >
+                          <segment.icon className="w-5 h-5" style={{ color: SEGMENT_COLORS[index] }} />
+                        </div>
+                        <CardTitle className="text-xl">{segment.name}</CardTitle>
+                      </div>
+                      <CardDescription>{segment.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex-grow space-y-4">
+                      <div>
+                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
+                          <Sparkles className="w-4 h-4 text-primary" />
+                          Key Characteristics
+                        </h4>
+                        <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                          <div className="p-3 rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-border/50">
+                            <div className="font-bold text-lg text-primary">{segment.recency.toFixed(0)}</div>
+                            <div className="text-xs text-muted-foreground mt-1">days<br/>Recency</div>
+                          </div>
+                          <div className="p-3 rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-border/50">
+                            <div className="font-bold text-lg text-primary">{segment.frequency.toFixed(1)}</div>
+                            <div className="text-xs text-muted-foreground mt-1">purchases<br/>Frequency</div>
+                          </div>
+                          <div className="p-3 rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-border/50">
+                            <div className="font-bold text-lg text-primary">${segment.monetary.toFixed(0)}</div>
+                            <div className="text-xs text-muted-foreground mt-1">average<br/>Monetary</div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+                        <h4 className="font-semibold text-sm mb-2 text-primary">Recommended Action</h4>
+                        <p className="text-sm text-muted-foreground">{segment.action}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+              
+              {/* Segment Comparison Chart */}
+              <Card className="bg-gradient-to-br from-card to-card/50 backdrop-blur hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:scale-[1.01]">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-primary" />
+                    <CardTitle>Segment Comparison (Averages)</CardTitle>
+                  </div>
+                  <CardDescription>Comparing the average RFM values across all segments.</CardDescription>
+                </CardHeader>
+                <CardContent className="h-[400px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={segmentData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }} barGap={50}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                      <XAxis 
+                        dataKey="name" 
+                        stroke="hsl(var(--muted-foreground))" 
+                        fontSize={12} 
+                        tickLine={false}
+                        axisLine={false}
+                      />
+                      <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                      <RechartsTooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'hsl(var(--card))', 
+                          border: '1px solid hsl(var(--border))',
+                          borderRadius: '8px'
+                        }}
+                      />
+                      <Legend />
+                      <RechartsBar dataKey="recency" fill={SEGMENT_COLORS[0]} name="Recency (days)" radius={[8, 8, 0, 0]} />
+                      <RechartsBar dataKey="frequency" fill={SEGMENT_COLORS[1]} name="Frequency" radius={[8, 8, 0, 0]} />
+                      <RechartsBar dataKey="monetary" fill="hsl(var(--primary))" name="Monetary ($)" radius={[8, 8, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              <InsightCard>
+                <div className="space-y-1">
+                  <p className="font-semibold text-foreground">🔍 Observation:</p>
+                  <p>Customer segmentation reveals that 97% of customers are "Single-Purchase Core" buyers, while a small 3% "At-Risk Loyalists" segment represents repeat buyers with significantly higher spending but declining engagement.</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="font-semibold text-foreground">💡 Suggestion:</p>
+                  <p>Launch a two-pronged strategy: For Single-Purchase Core customers, implement automated follow-up campaigns with personalized product recommendations to drive second purchases. For At-Risk Loyalists, create urgent win-back campaigns with exclusive offers to prevent churn of these high-value customers.</p>
                 </div>
               </InsightCard>
             </TabsContent>
