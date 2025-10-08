@@ -3,14 +3,14 @@
   "outputDirectory": "frontend/dist",
   "builds": [
     {
-      "src": "/backend/api/main.py",
+      "src": "/backend/main.py",
       "use": "@vercel/python"
     }
   ],
   "routes": [
     {
-      "src": "/backend/api/(.)",
-      "dest": "api/main.py"
+      "src": "/backend/(.)",
+      "dest": "backend/main.py"
     },
     {
       "src": "/(.)",
