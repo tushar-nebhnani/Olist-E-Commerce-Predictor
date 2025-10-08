@@ -3,18 +3,19 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
+import logging
 
 # --- 1. Initialize and Load V1 Model ---
 router = APIRouter()
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODEL_PATH = PROJECT_ROOT / "models" / "satisfaction_model_v1.joblib"
+MODEL_PATH = PROJECT_ROOT / "models" / "satisfaction_prediction" / "satisfaction_model_v1.joblib"
 
 pipeline_v1 = None
 try:
     pipeline_v1 = joblib.load(MODEL_PATH)
-    print("✅ Satisfaction V1 model loaded successfully.")
+    logging.info("✅ Satisfaction Base Model loaded successfully.")
 except Exception as e:
-    print(f"⚠️ Error loading V1 model: {e}")
+    logging.info(f"⚠️ Error loading V1 model: {e}")
 
 # --- 2. Define the V1 Input Schema ---
 class PredictionFeaturesV1(BaseModel):
