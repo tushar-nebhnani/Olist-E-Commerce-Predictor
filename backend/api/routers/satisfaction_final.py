@@ -5,18 +5,19 @@ import pandas as pd
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from pathlib import Path
+import logging
 
 # --- 1. Initialize and Load the FINAL Model ---
 router = APIRouter()
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-MODEL_PATH = PROJECT_ROOT / "models" / "satisfaction_model_final.joblib"
+MODEL_PATH = PROJECT_ROOT / "models" / "satisfaction_prediction" / "satisfaction_model_final.joblib"
 
 pipeline_final = None
 try:
     pipeline_final = joblib.load(MODEL_PATH)
-    print("✅ Final satisfaction model loaded successfully.")
+    logging.info("✅ Optimised satisfaction model loaded successfully.")
 except Exception as e:
-    print(f"⚠️ Error loading final model: {e}")
+    logging.info(f"⚠️ Error loading final model: {e}")
 
 # --- 2. Define the FINAL Input Schema ---
 # CHANGED: This now includes ALL features the final XGBoost model was trained on.

@@ -17,20 +17,28 @@ const Navigation = () => {
     { path: "/", label: "Home" },
   ];
 
-   const additionalLinks = [
+  // Links for the satisfaction predictor dropdown
+  const satisfactionVersions = [
+    { path: "/satisfaction-predictor-v1", label: "Baseline (V1)" },
+    { path: "/satisfaction-predictor-final", label: "Final (XGBoost)" }, // Updated path and label for final model
+  ];
+  
+  // Re-introduced from the older version: Links for the purchase predictor dropdown
+  const purchaseVersions = [
+    { path: "/purchase-prediction-v1", label: "Baseline Model" },
+    { path: "/purchase-prediction-v2", label: "Advanced Model" },
+  ];
+
+  // Other top-level links (purchase links removed as they are now in a dropdown)
+  const additionalLinks = [
     { path: "/business-insights", label: "Business Insights" },
     { path: "/customer-segmentation", label: "Customer Segmentation" },
     { path: "/delivery-prediction", label: "Delivery Prediction" },
-    { path: '/purchase-prediction-v1', label: 'Purchase Predictor V1' },
-    { path: '/purchase-prediction-v2', label: 'Purchase Predictor V2' },
   ];
 
-  const predictorVersions = [
-    { path: "/satisfaction-predictor-v1", label: "Version 1" },
-    { path: "/satisfaction-predictor-v2", label: "Version 2" },
-  ];
-
-  const isPredictorActive = location.pathname.startsWith("/satisfaction-predictor");
+  const isSatisfactionActive = location.pathname.startsWith("/satisfaction-predictor");
+  // Re-introduced from the older version: Active state checker for the purchase dropdown
+  const isPurchaseActive = location.pathname.startsWith("/purchase-prediction");
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -78,7 +86,7 @@ const Navigation = () => {
                 variant="ghost"
                 className={cn(
                   "px-4 py-2 rounded-md text-sm font-medium transition-all group",
-                  isPredictorActive
+                  isSatisfactionActive
                     ? "text-primary bg-primary/10"
                     : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
                 )}
@@ -91,7 +99,45 @@ const Navigation = () => {
               align="end" 
               className="w-56 bg-background/95 backdrop-blur-sm border-border/40"
             >
-              {predictorVersions.map((version) => (
+              {satisfactionVersions.map((version) => (
+                <DropdownMenuItem key={version.path} asChild>
+                  <Link
+                    to={version.path}
+                    className={cn(
+                      "cursor-pointer transition-colors",
+                      location.pathname === version.path
+                        ? "text-primary bg-primary/10 font-medium"
+                        : "text-muted-foreground hover:text-foreground"
+                    )}
+                  >
+                    {version.label}
+                  </Link>
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Re-introduced from the older version: Purchase Predictor Dropdown Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className={cn(
+                  "px-4 py-2 rounded-md text-sm font-medium transition-all group",
+                  isPurchaseActive
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                )}
+              >
+                Purchase Predictor
+                <ChevronDown className="ml-1 h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent 
+              align="end" 
+              className="w-56 bg-background/95 backdrop-blur-sm border-border/40"
+            >
+              {purchaseVersions.map((version) => (
                 <DropdownMenuItem key={version.path} asChild>
                   <Link
                     to={version.path}

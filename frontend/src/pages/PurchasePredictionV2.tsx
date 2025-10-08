@@ -1,3 +1,5 @@
+// src/pages/PurchasePredictionV2.tsx
+
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,17 +7,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Sparkles, LoaderCircle, AlertTriangle, ShoppingCart, Percent } from "lucide-react";
+import { Brain, Sparkles, LoaderCircle, AlertTriangle, ShoppingCart, Percent, ThumbsUp, ThumbsDown, ClipboardList, BarChart4 } from "lucide-react"; // Added BarChart4 icon
 
 interface PredictionResult {
   purchase_probability: number;
 }
 
-const v2Report = {
-  "Not Purchased (0)": { precision: 0.99, recall: 0.89, "f1-score": 0.94 },
-  "Purchased (1)": { precision: 0.69, recall: 0.95, "f1-score": 0.80 },
-  "accuracy": 0.90,
-  "AUC": 0.9735
+const v2ReportFull = {
+  "Not Purchased (0)": { precision: 0.99, recall: 0.90, "f1-score": 0.94, support: 94556 },
+  "Purchased (1)": { precision: 0.70, recall: 0.95, "f1-score": 0.81, support: 23910 },
+  "accuracy": { precision: null, recall: null, "f1-score": 0.91, support: 118466 }, // Accuracy as f1-score here represents overall accuracy
+  "macro avg": { precision: 0.84, recall: 0.92, "f1-score": 0.87, support: 118466 },
+  "weighted avg": { precision: 0.93, recall: 0.91, "f1-score": 0.91, support: 118466 }
 };
 
 const PurchasePredictorV2 = () => {
@@ -82,7 +85,7 @@ const PurchasePredictorV2 = () => {
   const stateOptions = ["SP", "RJ", "MG", "RS", "PR", "SC", "BA", "DF", "ES", "GO", "PE", "CE", "PA", "MT", "MA", "MS", "PB", "PI", "RN", "AL", "SE", "TO", "RO", "AM", "AC", "AP", "RR"].sort().map(s => <SelectItem key={s} value={s}>{s}</SelectItem>);
   
   const productCategories = [
-    "health_beauty", "computers_accessories", "auto", "bed_bath_table", "furniture_decor", "sports_leisure", "perfumery", "housewares", "telephony", "watches_gifts", "food_drink", "stationery", "toys", "fashion_bags_accessories", "cool_stuff"
+    "health_beauty", "computers_accessories", "auto", "bed_bath_table", "furniture_decor", "sports_leisure", "perfumery", "housewares", "telephony", "watches_gifts", "fashion_bags_accessories", "cool_stuff", "stationery", "toys", "food_drink",
   ].sort();
   const categoryOptions = productCategories.map(c => <SelectItem key={c} value={c}>{c.replace(/_/g, ' ')}</SelectItem>);
 
@@ -97,40 +100,35 @@ const PurchasePredictorV2 = () => {
               <ShoppingCart className="w-8 h-8 text-primary" />
             </div>
             <h1 className="text-5xl font-bold tracking-tight">
-              Purchase Predictor V2
+              Purchase Predictor (Advanced Model)
             </h1>
             <p className="text-xl text-muted-foreground">
-              Advanced model with behavioral and reputational features
+              An advanced model with behavioral and reputational features for superior purchase prediction.
             </p>
           </div>
 
           <Card className="border-2">
             <CardHeader>
-              <div className="flex items-center gap-4">
-                <Sparkles className="w-8 h-8 text-primary" />
-                <div>
-                  <CardTitle>Advanced Model Performance</CardTitle>
-                  <CardDescription>Version 2.0 - Enhanced Features</CardDescription>
-                </div>
-              </div>
+              <CardTitle>Advanced Model Performance</CardTitle>
+              <CardDescription>LightGBM model with enhanced features and imbalance handling.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="text-center p-4 rounded-lg bg-primary/5">
-                  <div className="text-3xl font-bold text-primary">{v2Report.AUC.toFixed(4)}</div>
+                  <div className="text-3xl font-bold text-primary">0.9754</div>
                   <div className="text-sm text-muted-foreground mt-1">AUC-ROC</div>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-primary/5">
-                  <div className="text-3xl font-bold text-primary">{(v2Report.accuracy * 100).toFixed(1)}%</div>
+                  <div className="text-3xl font-bold text-primary">91%</div>
                   <div className="text-sm text-muted-foreground mt-1">Accuracy</div>
                 </div>
                 <div className="text-center p-4 rounded-lg bg-primary/5">
-                  <div className="text-3xl font-bold text-primary">{v2Report["Purchased (1)"].precision.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground mt-1">Precision</div>
+                  <div className="text-3xl font-bold text-primary">0.70</div>
+                  <div className="text-sm text-muted-foreground mt-1">Precision (Purchased)</div>
                 </div>
-                <div className="text-center p-4 rounded-lg bg-primary/5">
-                  <div className="text-3xl font-bold text-primary">{v2Report["Purchased (1)"].recall.toFixed(2)}</div>
-                  <div className="text-sm text-muted-foreground mt-1">Recall</div>
+                <div className="text-center p-4 rounded-lg bg-green-500/10 border border-green-500/20">
+                  <div className="text-3xl font-bold text-green-500">0.95</div>
+                  <div className="text-sm text-muted-foreground mt-1">Recall (Purchased)</div>
                 </div>
               </div>
             </CardContent>
@@ -138,8 +136,93 @@ const PurchasePredictorV2 = () => {
           
           <Card className="border-2">
             <CardHeader>
+              <CardTitle className="flex items-center gap-2"><Brain className="w-5 h-5 text-primary" />Model Profile</CardTitle>
+              <CardDescription>Strengths and strategic trade-offs of the advanced V2 model.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center text-green-500"><ThumbsUp className="w-4 h-4 mr-2" />Advantages</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                  <li>**Exceptional Recall (0.95):** Identifies 95% of all potential purchases, making it highly effective for targeted campaigns.</li>
+                  <li>**Outstanding AUC (0.9754):** Demonstrates superior ability to differentiate between buyers and non-buyers.</li>
+                  <li>**Rich Feature Set:** Leverages customer history, product popularity, and seller reputation for highly accurate predictions.</li>
+                  <li>**High Business Value:** Maximizes opportunity for marketing, sales, and personalized user experiences.</li>
+                </ul>
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold flex items-center text-amber-500"><ThumbsDown className="w-4 h-4 mr-2" />Strategic Trade-offs</h3>
+                <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
+                  <li>**Moderate Precision (0.70):** To achieve high recall, it casts a wider net, meaning some non-buyers might be incorrectly flagged (false positives).</li>
+                  <li>**Increased Complexity:** Requires more data processing and a richer feature set compared to the baseline.</li>
+                  <li>**Computational Cost:** Training and prediction can be slightly more resource-intensive due to the larger feature space.</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+          
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><ClipboardList className="w-5 h-5 text-primary" />Classification Report</CardTitle>
+              <CardDescription>A detailed breakdown of the V2 model's performance on the test set.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-muted-foreground uppercase bg-primary/5">
+                    <tr>
+                      <th scope="col" className="px-4 py-2 rounded-l-lg">Class</th>
+                      <th scope="col" className="px-4 py-2 text-center">Precision</th>
+                      <th scope="col" className="px-4 py-2 text-center">Recall</th>
+                      <th scope="col" className="px-4 py-2 text-center">F1-Score</th>
+                      <th scope="col" className="px-4 py-2 rounded-r-lg text-center">Support</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {Object.entries(v2ReportFull).map(([key, value]) => (
+                      <tr key={key} className="border-b border-primary/10 last:border-b-0">
+                        <td className="px-4 py-2 font-semibold capitalize">{key.replace(/_/g, ' ')}</td>
+                        <td className="px-4 py-2 text-center">{value.precision !== null ? value.precision.toFixed(2) : '—'}</td>
+                        <td className="px-4 py-2 text-center">{value.recall !== null ? value.recall.toFixed(2) : '—'}</td>
+                        <td className="px-4 py-2 text-center">
+                          {key === 'accuracy' ? value['f1-score'].toFixed(2) : (value['f1-score'] !== null ? value['f1-score'].toFixed(2) : '—')}
+                        </td>
+                        <td className="px-4 py-2 text-center text-muted-foreground">{value.support.toLocaleString()}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-muted-foreground mt-2">
+                *The high recall of 0.95 for "Purchased (1)" indicates excellent capability to identify potential buyers.
+              </p>
+            </CardContent>
+          </Card>
+
+          {/* --- NEW CARD: Feature Importance --- */}
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2"><BarChart4 className="w-5 h-5 text-primary" />Feature Importance</CardTitle>
+              <CardDescription>Key features driving the V2 model's purchase predictions.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="relative w-full h-auto flex justify-center">
+                <img
+                  src="/feature_importance_v2.png" // Path to the image in your public folder
+                  alt="Top 20 Feature Importances for V2 Model"
+                  className="max-w-full h-auto rounded-lg shadow-md"
+                  style={{ maxWidth: '800px' }} // Adjust max-width as needed
+                />
+              </div>
+              <p className="text-xs text-muted-foreground mt-4 text-center">
+                `customer_total_spend`, `price`, `distance_km`, `product_popularity`, and `freight_value` are identified as the most influential factors in predicting purchase probability by the advanced model.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-2">
+            <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Brain className="w-5 h-5 text-primary" />
+                <Sparkles className="w-5 h-5 text-primary" />
                 Interactive Predictor
               </CardTitle>
               <CardDescription>Input features to get a purchase probability prediction</CardDescription>
