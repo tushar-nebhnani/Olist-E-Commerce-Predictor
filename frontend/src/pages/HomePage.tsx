@@ -2,7 +2,7 @@ import Navigation from "@/components/Navigation";
 import DatasetCard from "@/components/DatasetCard";
 import { Package, Star, ShoppingCart, CreditCard, Users, List, Store, MapPin, Languages } from "lucide-react";
 
-const Index = () => {
+const HomePage = () => {
   const datasets = [
     {
       icon: Package,
@@ -84,4 +84,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default HomePage;
