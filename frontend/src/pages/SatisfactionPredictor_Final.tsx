@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, TrendingUp, BarChart3, Sparkles, LoaderCircle, AlertTriangle, ThumbsUp, ThumbsDown, ClipboardList, Target } from "lucide-react";
 
+
 // --- Type for API response ---
 interface PredictionResult {
   is_satisfied_prediction: number;
@@ -79,7 +80,7 @@ const SatisfactionPredictorFinal = () => {
     };
 
     try {
-      const response = await fetch('http://localhost:8000/satisfaction/final/predict', {
+      const response = await fetch('https://olist-e-commerce-predictor-production.up.railway.app/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(requestBody),
