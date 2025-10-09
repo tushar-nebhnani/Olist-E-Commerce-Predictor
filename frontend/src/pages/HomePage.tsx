@@ -1,8 +1,22 @@
 import Navigation from "@/components/Navigation";
 import DatasetCard from "@/components/DatasetCard";
-import { Package, Star, ShoppingCart, CreditCard, Users, List, Store, MapPin, Languages } from "lucide-react";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Package, Star, ShoppingCart, CreditCard, Users, List, FileDown, User, Mail, Linkedin, Github, Store, MapPin, Languages, Briefcase, Award, GraduationCap } from "lucide-react";
+import { useState } from "react";
+import { Separator } from "@radix-ui/react-dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 const HomePage = () => {
+  const [aboutOpen, setAboutOpen] = useState(false);
   const datasets = [
     {
       icon: Package,
@@ -80,6 +94,121 @@ const HomePage = () => {
           ))}
         </div>
       </main>
+
+      <div className="pt-8 flex justify-center">
+          <Dialog open={aboutOpen} onOpenChange={setAboutOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="lg" className="group">
+                <User className="w-4 h-4 mr-2 group-hover:text-primary transition-colors" />
+                About the Developer
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="flex items-center gap-3 text-2xl">
+                  <div className="p-2 rounded-lg bg-primary/10">
+                    <User className="w-6 h-6 text-primary" />
+                  </div>
+                  About the Developer
+                </DialogTitle>
+                <DialogDescription>
+                  Data Scientist & Machine Learning Engineer
+                </DialogDescription>
+              </DialogHeader>
+              
+              <div className="space-y-6 pt-4">
+                {/* Professional Summary */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Briefcase className="w-5 h-5 text-primary" />
+                      Professional Summary
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      Passionate Data Scientist specializing in machine learning, predictive modeling, and data-driven insights. 
+                      Experienced in building end-to-end ML solutions from data preprocessing to model deployment.
+                    </p>
+                  </CardContent>
+                </Card>
+
+                {/* Skills */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <Award className="w-5 h-5 text-primary" />
+                      Core Competencies
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap gap-2">
+                      <Badge variant="secondary">Python</Badge>
+                      <Badge variant="secondary">Machine Learning</Badge>
+                      <Badge variant="secondary">Deep Learning</Badge>
+                      <Badge variant="secondary">NLP</Badge>
+                      <Badge variant="secondary">Data Analysis</Badge>
+                      <Badge variant="secondary">React</Badge>
+                      <Badge variant="secondary">SQL</Badge>
+                      <Badge variant="secondary">TensorFlow</Badge>
+                      <Badge variant="secondary">PyTorch</Badge>
+                      <Badge variant="secondary">Scikit-learn</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Education */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-lg">
+                      <GraduationCap className="w-5 h-5 text-primary" />
+                      Education
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <div>
+                      <p className="font-medium">Master's in Data Science</p>
+                      <p className="text-sm text-muted-foreground">University Name • Year</p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Separator />
+
+                {/* Contact & Links */}
+                <div className="space-y-4">
+                  <h4 className="font-semibold text-sm">Connect with Me</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <a href="mailto:your.email@example.com">
+                        <Mail className="w-4 h-4 mr-2" />
+                        Email
+                      </a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <a href="https://linkedin.com/in/yourprofile" target="_blank" rel="noopener noreferrer">
+                        <Linkedin className="w-4 h-4 mr-2" />
+                        LinkedIn
+                      </a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <a href="https://github.com/yourusername" target="_blank" rel="noopener noreferrer">
+                        <Github className="w-4 h-4 mr-2" />
+                        GitHub
+                      </a>
+                    </Button>
+                    <Button variant="outline" className="w-full justify-start" asChild>
+                      <a href="/resume.pdf" download>
+                        <FileDown className="w-4 h-4 mr-2" />
+                        Download Resume
+                      </a>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
+        </div>
     </div>
   );
 };

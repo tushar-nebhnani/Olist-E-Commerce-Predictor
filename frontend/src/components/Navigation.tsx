@@ -44,6 +44,7 @@ const Navigation = () => {
   // Other top-level links
   const additionalLinks = [
     { path: "/business-insights", label: "Business Insights" },
+    { path: "/product-recommendation", label: "Product Recommendations" },
   ];
 
   const isSatisfactionActive = location.pathname.startsWith("/satisfaction-predictor");

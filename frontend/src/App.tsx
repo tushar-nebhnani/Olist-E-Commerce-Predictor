@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
-import Index from "./pages/HomePage";
 import SatisfactionPredictorV1 from "./pages/SatisfactionPredictor_v1";
 import BusinessPerformancePage from "./pages/BusinessInsightsPage";
 import PurchasePredictorV1 from "./pages/PurchasePredictionV1";
@@ -12,6 +11,7 @@ import PurchasePredictorV2 from "./pages/PurchasePredictionV2";
 import NotFound from "./pages/NotFound";
 import SatisfactionPredictorFinal from "./pages/SatisfactionPredictor_Final";
 import HomePage from "./pages/HomePage";
+import ProductRecommendations from "./pages/ProductRecommendation";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +29,7 @@ const App = () => (
             <Route path="/business-insights" element={<BusinessPerformancePage />} /> 
             <Route path="/purchase-prediction-v1" element={<PurchasePredictorV1 />} /> 
             <Route path="/purchase-prediction-v2" element={<PurchasePredictorV2 />} /> 
+            <Route path="/product-recommendation" element={<ProductRecommendations />} /> 
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
