@@ -62,7 +62,7 @@ const PurchasePredictorV2 = () => {
     setResult(null);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/purchase/v2/predict', {
+      const response = await fetch('https://olist-e-commerce-predictor-production.up.railway.app/purchase/v2/predict', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
