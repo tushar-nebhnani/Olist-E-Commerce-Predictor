@@ -6,7 +6,11 @@ from fastapi.middleware.cors import CORSMiddleware
 # Import all your routers
 from backend.api.routers import satisfaction_final, satisfaction_v1, purchase_v1, purchase_v2
 
-# --- 1. IMPORT THE LOADER AND ROUTER FOR RECOMMENDATIONS ---
+from backend.api.routers.review_analysis_v1 import (
+    load_sentiment_model,
+    router as sentiment_router
+)
+
 from backend.api.routers.product_recommendation_v1 import (
     load_recommendation_models,
     router as recommendation_router
@@ -28,6 +32,8 @@ async def startup_event():
     print("--- Running application startup events ---")
     # This line is the critical fix. It calls the function to load your models.
     await load_recommendation_models(app)
+    await load_sentiment_model(app) 
+
     print("--- Application startup events complete ---")
 
 
@@ -66,6 +72,12 @@ app.include_router(
     recommendation_router,
     prefix="/recommendation",
     tags=["Product Recommendation"]
+)
+
+app.include_router(
+    sentiment_router,
+    prefix="/sentiment",
+    tags=["Review Analysis"]
 )
 
 # --- Root Endpoint ---
