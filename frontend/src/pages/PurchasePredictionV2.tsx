@@ -229,13 +229,12 @@ const PurchasePredictorV2 = () => {
               <CardDescription>Key features driving the V2 model's purchase predictions.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="relative w-full h-auto flex justify-center p-4">
-                <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-400 p-8 rounded-lg text-center">
-                    <p className="text-muted-foreground">Feature Importance chart placeholder.</p>
-                    <p className="text-xs text-muted-foreground mt-2">
-                        Top features include: `customer_total_spend`, `price`, `distance_km`, and `product_popularity`.
-                    </p>
-                </div>
+             <div className="relative w-full h-auto flex justify-center p-2">
+                <img 
+                    src="/feature_importance_v2.png" 
+                    alt="Feature Importance Chart" 
+                    className="w-full max-w-3xl h-auto object-contain rounded-lg border" 
+                />
               </div>
             </CardContent>
           </Card>
