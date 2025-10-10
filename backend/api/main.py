@@ -1,44 +1,71 @@
+# main.py - CORRECTED VERSION
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routers import satisfaction_final, satisfaction_v1, purchase_v1, purchase_v2
+
+# Import all your routers
+from backend.api.routers import satisfaction_final, satisfaction_v1, purchase_v1, purchase_v2
+
+# --- 1. IMPORT THE LOADER AND ROUTER FOR RECOMMENDATIONS ---
+from backend.api.routers.product_recommendation_v1 import (
+    load_recommendation_models,
+    router as recommendation_router
+)
 
 # --- App Initialization ---
 app = FastAPI(
     title="Olist Customer Satisfaction API",
-    description="API for predicting customer satisfaction. Includes a baseline V1 and an improved V2 model."
+    description="API for predicting customer satisfaction and product recommendations."
 )
 
+# --- 2. ADD THE STARTUP EVENT HANDLER ---
+# This decorator tells FastAPI to run this function once, right after it starts up.
+@app.on_event("startup")
+async def startup_event():
+    """
+    Loads all necessary ML models when the application starts.
+    """
+    print("--- Running application startup events ---")
+    # This line is the critical fix. It calls the function to load your models.
+    await load_recommendation_models(app)
+    print("--- Application startup events complete ---")
+
+
+# --- Add Middleware ---
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], 
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- Include API Routers ---
-# Each router handles a specific version or model type.
-# This makes the API clean and easy to scale.
+# --- Include All API Routers ---
 app.include_router(
-    satisfaction_v1.router, 
-    prefix="/satisfaction/v1", 
+    satisfaction_v1.router,
+    prefix="/satisfaction/v1",
     tags=["Satisfaction Prediction V1 (Baseline)"]
 )
 app.include_router(
-    satisfaction_final.router, 
-    prefix="/satisfaction/final", 
+    satisfaction_final.router,
+    prefix="/satisfaction/final",
     tags=["Satisfaction Prediction FINAL (XGBoost)"]
 )
-
 app.include_router(
-    purchase_v1.router, 
-    prefix="/purchase/v1", 
+    purchase_v1.router,
+    prefix="/purchase/v1",
     tags=["Purchase Prediction V1 (Baseline)"]
 )
 app.include_router(
-    purchase_v2.router, 
-    prefix="/purchase/v2", 
+    purchase_v2.router,
+    prefix="/purchase/v2",
     tags=["Purchase Prediction V2 (Advanced)"]
+)
+# --- 3. INCLUDE THE RECOMMENDATION ROUTER ---
+app.include_router(
+    recommendation_router,
+    prefix="/recommendation",
+    tags=["Product Recommendation"]
 )
 
 # --- Root Endpoint ---
