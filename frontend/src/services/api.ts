@@ -23,6 +23,11 @@ export const api = {
     return response.data;
   },
   
+  predictPurchaseV2: async (data: any) => {
+    const response = await axiosInstance.post('/purchase/v2/predict', data);
+    return response.data;
+  },
+  
   predictSatisfactionV2: async (data: any) => {
     const response = await axiosInstance.post('/satisfaction/final/predict', data);
     return response.data;

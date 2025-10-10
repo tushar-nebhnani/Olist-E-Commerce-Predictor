@@ -12,7 +12,6 @@ interface PredictionResult {
   purchase_probability: number;
 }
 
-// Updated with the FULL classification report from your training log
 const v1ReportFull = {
   "Not Purchased (0)": { precision: 0.83, recall: 0.99, "f1-score": 0.90, support: 95760 },
   "Purchased (1)": { precision: 0.82, recall: 0.20, "f1-score": 0.32, support: 23937 },

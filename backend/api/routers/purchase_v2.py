@@ -10,8 +10,8 @@ router = APIRouter()
 logging.basicConfig(level=logging.INFO)
 
 try:
-    PROJECT_ROOT = Path(__file__).resolve().parents[2]
-    MODEL_PATH = PROJECT_ROOT / "models" / "purchase_prediction" / "purchase_prediction_pipeline_v2.joblib"
+    PROJECT_ROOT = Path(__file__).resolve().parents[1]
+    MODEL_PATH = Path(r"D:\Data Science\CaseStudy ML\Olist-E-Commerce-Predictor-\backend\models\purchase_prediction\purchase_prediction_pipeline_v2.joblib")
     pipeline_v2 = joblib.load(MODEL_PATH)
     logging.info("✅ Purchase Prediction V2 model loaded successfully.")
 except Exception as e:

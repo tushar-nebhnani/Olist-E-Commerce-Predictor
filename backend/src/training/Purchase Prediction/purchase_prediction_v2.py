@@ -17,20 +17,18 @@ import seaborn as sns
 # --- 1. CONFIGURATION AND SETUP ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-try:
-    PROJECT_ROOT = Path(__file__).resolve().parents[2]
-except NameError:
-    PROJECT_ROOT = Path.cwd()
+PROJECT_ROOT = Path("D:/Data Science/CaseStudy ML/Olist-E-Commerce-Predictor-").resolve()
 
-DATA_PATH = PROJECT_ROOT / "data"
+DATA_PATH = PROJECT_ROOT / "backend" / "data"
 PROCESSED_DATA_PATH = DATA_PATH / "processed"
-OUTPUTS_PATH = PROJECT_ROOT / "models" / "purchase_prediction"
+
+OUTPUTS_PATH = PROJECT_ROOT / "backend" / "models" / "purchase_prediction"
 OUTPUTS_PATH.mkdir(parents=True, exist_ok=True)
 
 NEGATIVE_SAMPLE_RATIO = 4
 RANDOM_STATE = 42
 
-# --- 2. DATA LOADING & PREPARATION FUNCTIONS ---
+# --- 2. DATA LOADING & PREPARATION FUNCTIONS (NO CHANGE) ---
 
 def load_individual_datasets(path: Path) -> dict:
     """Loads all individual cleaned parquet files."""
@@ -106,7 +104,7 @@ def engineer_advanced_features(df: pd.DataFrame) -> pd.DataFrame:
     df = pd.merge(df, product_stats, on='product_id', how='left')
     df = pd.merge(df, category_stats, on='product_category_name_english', how='left')
     
-    logging.info("  -> Advanced features created successfully.")
+    logging.info("  -> Advanced features created successfully.")
     return df
 
 def engineer_interaction_features_and_sample(df: pd.DataFrame) -> pd.DataFrame:
@@ -157,10 +155,10 @@ def engineer_interaction_features_and_sample(df: pd.DataFrame) -> pd.DataFrame:
     model_df.dropna(inplace=True)
     model_df = model_df.sample(frac=1, random_state=RANDOM_STATE).reset_index(drop=True)
     
-    logging.info(f"  -> Final modeling dataset shape: {model_df.shape}")
+    logging.info(f"  -> Final modeling dataset shape: {model_df.shape}")
     return model_df
 
-# --- 3. MODEL TRAINING & SAVING FUNCTIONS ---
+# --- 3. MODEL TRAINING & SAVING FUNCTIONS (MODIFIED) ---
 
 def train_and_save_pipeline(model_df: pd.DataFrame) -> None:
     """Trains and saves the v2 prediction model pipeline."""
@@ -195,21 +193,32 @@ def train_and_save_pipeline(model_df: pd.DataFrame) -> None:
         objective='binary', metric='auc', n_estimators=1000, learning_rate=0.05,
         num_leaves=40, max_depth=-1, min_child_samples=30, subsample=0.85,
         colsample_bytree=0.75, random_state=RANDOM_STATE, n_jobs=-1,
-        scale_pos_weight=scale_pos_weight  # Key parameter to address imbalance
+        scale_pos_weight=scale_pos_weight
     )
 
     model_pipeline = Pipeline(steps=[('preprocessor', preprocessor), ('classifier', lgbm)])
     
     logging.info("Training the v2 LightGBM model...")
     
-    preprocessor.fit(X_train)
+    # --- START OF FIX: Transform X_test for eval_set ---
+    
+    # 1. Fit the preprocessor only on X_train. 
+    # (The pipeline.fit below will call preprocessor.fit_transform on X_train anyway, 
+    # but explicitly doing it allows us to transform X_test separately).
+    preprocessor.fit(X_train) 
+    
+    # 2. Transform X_test to get the processed feature array (now all numerical).
     X_test_transformed = preprocessor.transform(X_test)
     
+    # 3. Pass the *transformed* X_test to the classifier's eval_set parameter.
+    #    The 'classifier__' prefix tells the pipeline to pass these kwargs directly to the 'classifier' step.
     model_pipeline.fit(
         X_train, y_train,
-        classifier__eval_set=[(X_test_transformed, y_test)],
-        classifier__callbacks=[lgb.early_stopping(50, verbose=True)]
+        classifier__eval_set=[(X_test_transformed, y_test)], # FIXED: Use X_test_transformed
+        classifier__callbacks=[lgb.early_stopping(50, verbose=True)],
     )
+    
+    # --- END OF FIX ---
     
     logging.info("Evaluating v2 model performance...")
     y_pred_proba = model_pipeline.predict_proba(X_test)[:, 1]
@@ -231,9 +240,15 @@ def train_and_save_pipeline(model_df: pd.DataFrame) -> None:
     logging.info(f"Trained pipeline v2 saved to '{model_file}'")
 
     # Feature Importance Plot
+    # Note: Feature names must be correctly mapped using get_feature_names_out() from the OHE.
     feature_importances = model_pipeline.named_steps['classifier'].feature_importances_
-    ohe_feature_names = model_pipeline.named_steps['preprocessor'].named_transformers_['cat'].get_feature_names_out(categorical_features)
-    all_feature_names = numerical_features + list(ohe_feature_names)
+    
+    # Get all feature names after transformation
+    # The preprocessor.get_feature_names_out() call is the most robust way to get all column names
+    all_feature_names = model_pipeline.named_steps['preprocessor'].get_feature_names_out()
+    
+    # Clean up the names from ColumnTransformer's output for better plotting
+    all_feature_names = [name.split('__')[-1] for name in all_feature_names]
     
     importance_df = pd.DataFrame({'feature': all_feature_names, 'importance': feature_importances}).sort_values('importance', ascending=False).head(20)
     
@@ -244,7 +259,7 @@ def train_and_save_pipeline(model_df: pd.DataFrame) -> None:
     plt.savefig(OUTPUTS_PATH / 'feature_importance_v2.png')
     logging.info(f"Feature importance plot saved to '{OUTPUTS_PATH / 'feature_importance_v2.png'}'")
 
-# --- 4. MAIN ORCHESTRATOR ---
+# --- 4. MAIN ORCHESTRATOR (NO CHANGE) ---
 def main_pipeline():
     """Main orchestrator for the v2 purchase prediction model pipeline."""
     logging.info("--- Starting God-Tier Purchase Prediction Pipeline v2 ---")

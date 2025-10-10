@@ -1,13 +1,12 @@
-// src/pages/PurchasePredictionV2.tsx
-
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Brain, Sparkles, LoaderCircle, AlertTriangle, ShoppingCart, Percent, ThumbsUp, ThumbsDown, ClipboardList, BarChart4 } from "lucide-react"; // Added BarChart4 icon
+import { Brain, Sparkles, LoaderCircle, AlertTriangle, ShoppingCart, Percent, ThumbsUp, ThumbsDown, ClipboardList, BarChart4 } from "lucide-react";
+import axios from 'axios'; 
 
 interface PredictionResult {
   purchase_probability: number;
@@ -47,6 +46,41 @@ const PurchasePredictorV2 = () => {
     category_avg_review_score: 4.15,
   });
 
+  const api = useMemo(() => {
+    const API_BASE_URL = 'http://localhost:8000';
+    const axiosInstance = axios.create({
+      baseURL: API_BASE_URL,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const errorHandler = (error: any) => {
+      if (error.response) {
+        console.error('API Error:', error.response.data);
+        // Throw an error with the detailed message for the UI
+        throw new Error(error.response.data.detail || error.response.data.message || 'An error occurred on the server.');
+      } else if (error.request) {
+        console.error('Network Error:', error.request);
+        throw new Error('Network error - please check your API service is running.');
+      } else {
+        console.error('Error:', error.message);
+        throw error;
+      }
+    };
+
+    return {
+      predictPurchaseV2: async (data: any) => {
+        try {
+          const response = await axiosInstance.post('/purchase/v2/predict', data);
+          return response.data;
+        } catch (error) {
+          errorHandler(error);
+        }
+      },
+    };
+  }, []);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: parseFloat(value) || 0 }));
@@ -56,31 +90,21 @@ const PurchasePredictorV2 = () => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async () => {
+  const handleSubmit = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     setResult(null);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/purchase/v2/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || "An error occurred");
-      }
+      const data = await api.predictPurchaseV2(formData);
+      if (data) setResult(data as PredictionResult);
       
-      const data = await response.json();
-      setResult(data);
     } catch (err: any) {
-      setError(err.message);
+      setError(err.message || "Failed to connect to the prediction service.");
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [formData, api]); // Dependency array includes 'api' and 'formData'
 
   const stateOptions = ["SP", "RJ", "MG", "RS", "PR", "SC", "BA", "DF", "ES", "GO", "PE", "CE", "PA", "MT", "MA", "MS", "PB", "PI", "RN", "AL", "SE", "TO", "RO", "AM", "AC", "AP", "RR"].sort().map(s => <SelectItem key={s} value={s}>{s}</SelectItem>);
   
@@ -143,18 +167,18 @@ const PurchasePredictorV2 = () => {
               <div className="space-y-2">
                 <h3 className="font-semibold flex items-center text-green-500"><ThumbsUp className="w-4 h-4 mr-2" />Advantages</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
-                  <li>**Exceptional Recall (0.95):** Identifies 95% of all potential purchases, making it highly effective for targeted campaigns.</li>
-                  <li>**Outstanding AUC (0.9754):** Demonstrates superior ability to differentiate between buyers and non-buyers.</li>
-                  <li>**Rich Feature Set:** Leverages customer history, product popularity, and seller reputation for highly accurate predictions.</li>
-                  <li>**High Business Value:** Maximizes opportunity for marketing, sales, and personalized user experiences.</li>
+                  <li>Exceptional Recall (0.95): Identifies 95% of all potential purchases, making it highly effective for targeted campaigns.</li>
+                  <li>Outstanding AUC (0.9754): Demonstrates superior ability to differentiate between buyers and non-buyers.</li>
+                  <li>Rich Feature Set: Leverages customer history, product popularity, and seller reputation for highly accurate predictions.</li>
+                  <li>High Business Value: Maximizes opportunity for marketing, sales, and personalized user experiences.</li>
                 </ul>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold flex items-center text-amber-500"><ThumbsDown className="w-4 h-4 mr-2" />Strategic Trade-offs</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
-                  <li>**Moderate Precision (0.70):** To achieve high recall, it casts a wider net, meaning some non-buyers might be incorrectly flagged (false positives).</li>
-                  <li>**Increased Complexity:** Requires more data processing and a richer feature set compared to the baseline.</li>
-                  <li>**Computational Cost:** Training and prediction can be slightly more resource-intensive due to the larger feature space.</li>
+                  <li>Moderate Precision (0.70): To achieve high recall, it casts a wider net, meaning some non-buyers might be incorrectly flagged (false positives).</li>
+                  <li>Increased Complexity: Requires more data processing and a richer feature set compared to the baseline.</li>
+                  <li>Computational Cost: Training and prediction can be slightly more resource-intensive due to the larger feature space.</li>
                 </ul>
               </div>
             </CardContent>
@@ -198,24 +222,21 @@ const PurchasePredictorV2 = () => {
             </CardContent>
           </Card>
 
-          {/* --- NEW CARD: Feature Importance --- */}
+          {/* --- Feature Importance (Placeholder) --- */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><BarChart4 className="w-5 h-5 text-primary" />Feature Importance</CardTitle>
               <CardDescription>Key features driving the V2 model's purchase predictions.</CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="relative w-full h-auto flex justify-center">
-                <img
-                  src="/feature_importance_v2.png" // Path to the image in your public folder
-                  alt="Top 20 Feature Importances for V2 Model"
-                  className="max-w-full h-auto rounded-lg shadow-md"
-                  style={{ maxWidth: '800px' }} // Adjust max-width as needed
-                />
+              <div className="relative w-full h-auto flex justify-center p-4">
+                <div className="w-full max-w-lg bg-gray-100 dark:bg-gray-800 border border-dashed border-gray-400 p-8 rounded-lg text-center">
+                    <p className="text-muted-foreground">Feature Importance chart placeholder.</p>
+                    <p className="text-xs text-muted-foreground mt-2">
+                        Top features include: `customer_total_spend`, `price`, `distance_km`, and `product_popularity`.
+                    </p>
+                </div>
               </div>
-              <p className="text-xs text-muted-foreground mt-4 text-center">
-                `customer_total_spend`, `price`, `distance_km`, `product_popularity`, and `freight_value` are identified as the most influential factors in predicting purchase probability by the advanced model.
-              </p>
             </CardContent>
           </Card>
 
@@ -231,6 +252,7 @@ const PurchasePredictorV2 = () => {
               <div className="grid md:grid-cols-3 gap-6">
                 <div className="md:col-span-2">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {/* Render input fields from formData state */}
                     {Object.entries(formData).map(([key, value]) => (
                       <div key={key} className="space-y-1">
                         <Label htmlFor={key} className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>
