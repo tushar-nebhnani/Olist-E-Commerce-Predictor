@@ -1,1 +1,2 @@
 *.joblib filter=lfs diff=lfs merge=lfs -text
+/backend/models/Price[[:space:]]Recommender/random_forest_price_recommender_v2.pkl filter=lfs diff=lfs merge=lfs -text

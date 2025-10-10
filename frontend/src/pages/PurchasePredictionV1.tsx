@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, ShoppingCart, LoaderCircle, AlertTriangle, Percent, ThumbsUp, ThumbsDown, ClipboardList } from "lucide-react";
+import { api } from "@/services/api"; 
 
 interface PredictionResult {
   purchase_probability: number;
@@ -55,21 +56,25 @@ const PurchasePredictorV1 = () => {
     setResult(null);
 
     try {
-      const response = await fetch('http://127.0.0.1:8000/purchase/v1/predict', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
+      // 🚀 Use the imported api utility function (Axios wrapper)
+      const data = await api.predictPurchaseV1(formData);
+      
+      // Axios handles JSON parsing and non-2xx errors are caught automatically
+      setResult(data);
+      
+    } catch (err: any) {
+      // ⚠️ Catch the error thrown by the axios instance or the api.errorHandler
+      let errorMessage = 'An unknown error occurred.';
 
-      if (!response.ok) {
-        const errData = await response.json();
-        throw new Error(errData.detail || "An error occurred");
+      if (err.message) {
+        // This will capture the error message set by api.errorHandler
+        errorMessage = err.message;
+      } else if (err.response?.data?.detail) {
+        // A fallback for direct axios error structure
+        errorMessage = err.response.data.detail;
       }
       
-      const data = await response.json();
-      setResult(data);
-    } catch (err: any) {
-      setError(err.message);
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -136,17 +141,17 @@ const PurchasePredictorV1 = () => {
               <div className="space-y-2">
                 <h3 className="font-semibold flex items-center text-green-500"><ThumbsUp className="w-4 h-4 mr-2" />Advantages</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
-                  <li>**High Overall Accuracy:** Correctly predicts the outcome in 83% of cases, driven by its strength on the majority class.</li>
-                  <li>**High Precision:** When it predicts a purchase, it is correct 82% of the time, avoiding false alarms.</li>
-                  <li>**Good Benchmark:** Establishes a solid performance baseline to measure improvements against.</li>
+                  <li>High Overall Accuracy: Correctly predicts the outcome in 83% of cases, driven by its strength on the majority class.</li>
+                  <li>High Precision: When it predicts a purchase, it is correct 82% of the time, avoiding false alarms.</li>
+                  <li>Good Benchmark: Establishes a solid performance baseline to measure improvements against.</li>
                 </ul>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold flex items-center text-red-500"><ThumbsDown className="w-4 h-4 mr-2" />Critical Flaw (The "Fall")</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
-                  <li>**Extremely Low Recall:** Fails to identify 80% of actual buyers, making it unsuitable for marketing or sales targeting.</li>
-                  <li>**Biased Towards Majority Class:** Due to class imbalance, it learns to predict "Not Purchased" by default.</li>
-                  <li>**Limited Features:** Lacks deeper customer behavior and product popularity signals, limiting its intelligence.</li>
+                  <li>Extremely Low Recall: Fails to identify 80% of actual buyers, making it unsuitable for marketing or sales targeting.</li>
+                  <li>Biased Towards Majority Class: Due to class imbalance, it learns to predict "Not Purchased" by default.</li>
+                  <li>Limited Features:** Lacks deeper customer behavior and product popularity signals, limiting its intelligence.</li>
                 </ul>
               </div>
             </CardContent>
