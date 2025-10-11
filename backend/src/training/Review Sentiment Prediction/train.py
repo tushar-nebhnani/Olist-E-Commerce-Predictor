@@ -171,5 +171,6 @@ def main_pipeline():
     logging.info("--- Sentiment Analysis Pipeline Finished Successfully ---")
 
 if __name__ == '__main__':
+    
     main_pipeline()
 

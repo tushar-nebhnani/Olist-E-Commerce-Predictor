@@ -1,11 +1,23 @@
-# main.py - FINAL CORRECTED VERSION
+# main.py
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+import logging
 
-# --- 1. Clean up imports ---
-# Import each router module directly
-from .routers import satisfaction_final, satisfaction_v1, purchase_v1, purchase_v2, review_analysis_v1, product_recommendation_v1
+# --- 1. Standardize imports and configure logging ---
+# This helps ensure modules are found correctly and provides startup feedback.
+from backend.api.routers import (
+    satisfaction_final, 
+    satisfaction_v1, 
+    purchase_v1, 
+    purchase_v2, 
+    review_analysis_v1, 
+    product_recommendation_v1, 
+    review_analysis_v2
+)
+
+logging.basicConfig(level=logging.INFO)
+
 
 # --- App Initialization ---
 app = FastAPI(
@@ -13,28 +25,38 @@ app = FastAPI(
     description="API for predicting customer satisfaction and product recommendations."
 )
 
-# --- 2. Add the Startup Event Handler ---
+# --- 2. Add a more robust Startup Event Handler ---
 @app.on_event("startup")
 async def startup_event():
     """
-    Loads all necessary ML models when the application starts.
+    Loads all necessary ML models when the application starts and verifies them.
     """
-    print("--- Running application startup events ---")
+    logging.info("--- 🚀 Running application startup events ---")
+    
+    # Load all models
     await product_recommendation_v1.load_recommendation_models(app)
     await review_analysis_v1.load_sentiment_model(app)
-    print("--- Application startup events complete ---")
+    
+    logging.info("--- ✅ Application startup events complete ---")
+
+    # FIX: Add a verification step to confirm the model is in memory.
+    # This directly addresses the "AttributeError: 'State' object has no attribute 'sentiment_model'"
+    if hasattr(app.state, 'sentiment_model') and hasattr(app.state, 'sentiment_vectorizer'):
+        logging.info("👍 Sentiment model and vectorizer were loaded into app.state successfully.")
+    else:
+        logging.error("🔥 CRITICAL ERROR: Sentiment model or vectorizer FAILED to load into app.state. Check the file paths in the loading functions.")
+
 
 # --- Add Middleware ---
-# Note: For production, you should restrict origins to your frontend's domain
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Example: ["http://localhost:3000", "https://your-frontend.com"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# --- 3. Include All API Routers (with duplicate removed) ---
+# --- 3. Include All API Routers ---
 app.include_router(
     satisfaction_v1.router,
     prefix="/satisfaction/v1",
@@ -49,6 +71,11 @@ app.include_router(
     review_analysis_v1.router,
     prefix="/review/v1",
     tags=["Review Analysis"]
+)
+app.include_router(
+    review_analysis_v2.router, 
+    prefix="/api/v2", 
+    tags=["Review Analysis V2"]
 )
 app.include_router(
     purchase_v1.router,
