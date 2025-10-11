@@ -4,14 +4,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 # Import all your routers
-from backend.api.routers import satisfaction_final, satisfaction_v1, purchase_v1, purchase_v2
+from .routers import satisfaction_final, satisfaction_v1, purchase_v1, purchase_v2
 
-from backend.api.routers.review_analysis_v1 import (
+from .routers.review_analysis_v1 import (
     load_sentiment_model,
     router as sentiment_router
 )
 
-from backend.api.routers.product_recommendation_v1 import (
+from .routers.product_recommendation_v1 import (
     load_recommendation_models,
     router as recommendation_router
 )

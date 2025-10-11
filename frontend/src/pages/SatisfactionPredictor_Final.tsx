@@ -130,10 +130,10 @@ const SatisfactionPredictorFinal = () => {
             </CardHeader>
             <CardContent>
               <ul className="list-disc list-inside space-y-1 text-muted-foreground">
-                <li>**Advanced Feature Set:** Uses seller performance metrics and geographic distance for maximum context.</li>
-                <li>**Optimized for Recall:** Employs an XGBoost classifier with `scale_pos_weight` to prioritize finding negative reviews.</li>
-                <li>**Strategic Trade-off:** Sacrifices some overall accuracy to achieve a massive boost in identifying unhappy customers.</li>
-                <li>**Business-Focused:** The best model for proactive customer support and intervention.</li>
+                <li>Advanced Feature Set: Uses seller performance metrics and geographic distance for maximum context.</li>
+                <li>Optimized for Recall: Employs an XGBoost classifier with `scale_pos_weight` to prioritize finding negative reviews.</li>
+                <li>Strategic Trade-off: Sacrifices some overall accuracy to achieve a massive boost in identifying unhappy customers.</li>
+                <li>Business-Focused: The best model for proactive customer support and intervention.</li>
               </ul>
             </CardContent>
           </Card>
@@ -170,17 +170,17 @@ const SatisfactionPredictorFinal = () => {
               <div className="space-y-2">
                 <h3 className="font-semibold flex items-center text-green-500"><ThumbsUp className="w-4 h-4 mr-2" />Advantages</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
-                  <li>**High Recall:** Successfully identifies 60% of all dissatisfied customers, a huge improvement.</li>
-                  <li>**Actionable Insights:** Ideal for flagging at-risk orders for proactive intervention.</li>
-                  <li>**Powerful Technique:** XGBoost's class weighting is a state-of-the-art method for imbalance.</li>
+                  <li>High Recall: Successfully identifies 60% of all dissatisfied customers, a huge improvement.</li>
+                  <li>Actionable Insights: Ideal for flagging at-risk orders for proactive intervention.</li>
+                  <li>Powerful Technique: XGBoost's class weighting is a state-of-the-art method for imbalance.</li>
                 </ul>
               </div>
               <div className="space-y-2">
                 <h3 className="font-semibold flex items-center text-red-500"><ThumbsDown className="w-4 h-4 mr-2" />Disadvantages</h3>
                 <ul className="list-disc list-inside space-y-1 text-muted-foreground text-sm">
-                  <li>**Lower Precision:** More likely to incorrectly flag a satisfied customer as "at-risk".</li>
-                  <li>**Lower Overall Accuracy:** The strategic focus on recall slightly reduces the overall accuracy metric.</li>
-                  <li>**Most Complex:** Requires the most features, making the API and training more complex.</li>
+                  <li>Lower Precision: More likely to incorrectly flag a satisfied customer as "at-risk".</li>
+                  <li>Lower Overall Accuracy: The strategic focus on recall slightly reduces the overall accuracy metric.</li>
+                  <li>Most Complex: Requires the most features, making the API and training more complex.</li>
                 </ul>
               </div>
             </CardContent>

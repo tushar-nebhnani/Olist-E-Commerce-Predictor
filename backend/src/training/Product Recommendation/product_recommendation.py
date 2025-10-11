@@ -2,12 +2,10 @@ import pandas as pd
 import numpy as np
 from scipy.sparse import csr_matrix
 import os
-import joblib  # Switched from pickle to joblib
+import joblib  
 from sklearn.decomposition import TruncatedSVD
 
-# --- Configuration ---
 DATA_PATH = r"D:\Data Science\CaseStudy ML\Olist-E-Commerce-Predictor-\backend\data\processed"
-# Updated path to save the final model artifacts
 ARTIFACTS_PATH = r"D:\Data Science\CaseStudy ML\Olist-E-Commerce-Predictor-\backend\models\Product Recommendation"
 
 def train_and_save_svd_model():
@@ -24,13 +22,11 @@ def train_and_save_svd_model():
         print(f"❌ Error: Could not find data files. Details: {e}")
         return
 
-    # --- Data Preparation ---
     df = pd.merge(orders_df, order_items_df, on='order_id')
     interactions_df = df.groupby(['customer_id', 'product_id']).size().reset_index(name='purchase_count')
     interactions_df['purchase_count'] = 1
     print(f"✅ Data prepared with {len(interactions_df)} unique user-item interactions.")
 
-    # --- Create User-Item Matrix (Memory-Efficiently) ---
     print("\n--- 2. Building User-Item Matrix ---")
     user_cat = interactions_df['customer_id'].astype('category')
     product_cat = interactions_df['product_id'].astype('category')
@@ -49,7 +45,6 @@ def train_and_save_svd_model():
     svd.fit(user_item_sparse_matrix)
     print("✅ Engine training complete!")
 
-    # --- Performance Evaluation (Qualitative) ---
     print("\n--- 4. Generating Sample Recommendations to Assess Quality ---")
     predicted_ratings = np.dot(svd.transform(user_item_sparse_matrix), svd.components_)
     random_user_index = np.random.choice(predicted_ratings.shape[0])
@@ -63,10 +58,8 @@ def train_and_save_svd_model():
     print(f"\nTop 10 recommendations for user '{random_user_id}':")
     print(final_recommendations)
 
-    # --- Save the Model and Mappings using Joblib ---
     print("\n--- 5. Saving Model and Artifacts to Disk ---")
     
-    # Ensure the target directory exists
     os.makedirs(ARTIFACTS_PATH, exist_ok=True)
     
     # Save artifacts using joblib

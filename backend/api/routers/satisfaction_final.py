@@ -40,22 +40,18 @@ class PredictionFeaturesFinal(BaseModel):
     seller_order_count: int
     distance_km: float
 
-# --- 3. Create the FINAL Prediction Endpoint ---
 @router.post("/predict")
 async def predict_satisfaction_final(features: PredictionFeaturesFinal):
-    # CHANGED: Using the 'pipeline_final' variable
     if pipeline_final is None:
         raise HTTPException(status_code=503, detail="Final Model not loaded.")
     
     try:
         input_df = pd.DataFrame([features.dict()])
         
-        # CHANGED: Using the 'pipeline_final' variable
         prediction = pipeline_final.predict(input_df)
         probability = pipeline_final.predict_proba(input_df)
         
         return {
-            # CHANGED: Reporting the correct model version
             'model_version': 'final (XGBoost)',
             'is_satisfied_prediction': int(prediction[0]),
             'satisfaction_probability': float(probability[0][1])

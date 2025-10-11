@@ -25,7 +25,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/satisfaction-predictor-v1" element={<SatisfactionPredictorV1 />} />
-            <Route path="/satisfaction-predictor-v2" element={<SatisfactionPredictorFinal />} />
+            <Route path="/satisfaction-predictor-final" element={<SatisfactionPredictorFinal />} />
             <Route path="/business-insights" element={<BusinessPerformancePage />} /> 
             <Route path="/purchase-prediction-v1" element={<PurchasePredictorV1 />} /> 
             <Route path="/purchase-prediction-v2" element={<PurchasePredictorV2 />} /> 

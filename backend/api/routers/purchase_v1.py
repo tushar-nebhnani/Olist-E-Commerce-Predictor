@@ -10,7 +10,7 @@ router = APIRouter()
 logging.basicConfig(level=logging.INFO)
 
 try:
-    PROJECT_ROOT = Path(__file__).resolve().parents[1]
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
     MODEL_PATH = PROJECT_ROOT / "models" / "purchase_prediction" / "purchase_prediction_pipeline.joblib"
     pipeline_v1 = joblib.load(MODEL_PATH)
     logging.info("✅ Purchase Prediction V1 model loaded successfully.")
