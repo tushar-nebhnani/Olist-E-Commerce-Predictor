@@ -1,16 +1,26 @@
-// SatisfactionPredictor_v1.tsx
 import { useState } from "react";
 import Navigation from "@/components/Navigation";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Brain, TrendingUp, BarChart3, Sparkles, LoaderCircle, AlertTriangle, ThumbsUp, ThumbsDown, ClipboardList } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { Brain, TrendingUp, BarChart3, Sparkles, LoaderCircle, AlertTriangle, ThumbsUp, ThumbsDown, ClipboardList, MessageSquare, TrendingDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 // --- Type for API response ---
 interface PredictionResult {
   is_satisfied_prediction: number;
   satisfaction_probability: number;
+}
+
+interface SentimentResult {
+  original_text: string;
+  cleaned_text: string;
+  sentiment: "Positive" | "Negative";
+  sentiment_score: number;
+  prediction: 0 | 1;
 }
 
 // --- Hardcoded classification report data for V1 model ---
@@ -22,6 +32,8 @@ const v1Report = {
 };
 
 const SatisfactionPredictorV1 = () => {
+  const { toast } = useToast();
+  
   // --- State management for form inputs ---
   const [price, setPrice] = useState(129.90);
   const [freightValue, setFreightValue] = useState(15.50);
@@ -32,6 +44,12 @@ const SatisfactionPredictorV1 = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PredictionResult | null>(null);
+
+  // --- State management for sentiment analysis ---
+  const [reviewText, setReviewText] = useState("");
+  const [isSentimentLoading, setIsSentimentLoading] = useState(false);
+  const [sentimentResult, setSentimentResult] = useState<SentimentResult | null>(null);
+  const [sentimentError, setSentimentError] = useState<string | null>(null);
 
   // --- API call function ---
   const handlePrediction = async () => {
@@ -67,6 +85,64 @@ const SatisfactionPredictorV1 = () => {
       setIsLoading(false);
     }
   };
+
+  // --- Sentiment analysis API call ---
+  const handleSentimentAnalysis = async () => {
+    if (!reviewText.trim()) {
+      toast({
+        title: "Input Required",
+        description: "Please enter a review to analyze.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsSentimentLoading(true);
+    setSentimentError(null);
+    setSentimentResult(null);
+
+    try {
+      const response = await fetch( "http://127.0.0.1:8000/review/v1/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ review_text: reviewText }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status} ${response.statusText}`);
+      }
+
+      const data: SentimentResult = await response.json();
+      setSentimentResult(data);
+      toast({
+        title: "Analysis Complete",
+        description: `Sentiment detected: ${data.sentiment}`,
+      });
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An unexpected error occurred";
+      setSentimentError(errorMessage);
+      toast({
+        title: "Analysis Failed",
+        description: "Sorry, an error occurred. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsSentimentLoading(false);
+    }
+  };
+
+  const exampleReviews = [
+    {
+      label: "Positive Example",
+      text: "O produto é maravilhoso e a entrega foi super rápida! Recomendo muito, qualidade excelente e atendimento perfeito."
+    },
+    {
+      label: "Negative Example",
+      text: "Que produto horrível, veio quebrado e demorou muito. Péssima experiência, não compro mais."
+    }
+  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -265,6 +341,136 @@ const SatisfactionPredictorV1 = () => {
                     </div>
                   )}
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* --- Sentiment Analysis Card --- */}
+          <Card className="border-2">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="w-5 h-5 text-primary" />
+                Sentiment Analysis
+              </CardTitle>
+              <CardDescription>
+                Analyze customer review text to detect emotional sentiment (Portuguese)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="review-text">Customer Review</Label>
+                  <Textarea
+                    id="review-text"
+                    placeholder="Digite ou cole a avaliação do cliente aqui..."
+                    value={reviewText}
+                    onChange={(e) => setReviewText(e.target.value)}
+                    className="min-h-[120px] mt-2"
+                  />
+                  <div className="text-sm text-muted-foreground text-right mt-1">
+                    {reviewText.length} characters
+                  </div>
+                </div>
+
+                {/* Example Buttons */}
+                <div className="flex flex-wrap gap-2">
+                  <span className="text-sm text-muted-foreground self-center mr-2">
+                    Try examples:
+                  </span>
+                  {exampleReviews.map((example, index) => (
+                    <Button
+                      key={index}
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setReviewText(example.text);
+                        setSentimentResult(null);
+                        setSentimentError(null);
+                      }}
+                      disabled={isSentimentLoading}
+                    >
+                      {example.label}
+                    </Button>
+                  ))}
+                </div>
+
+                <Button
+                  onClick={handleSentimentAnalysis}
+                  disabled={isSentimentLoading || !reviewText.trim()}
+                  className="w-full"
+                >
+                  {isSentimentLoading ? (
+                    <>
+                      <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
+                      Analyzing Sentiment...
+                    </>
+                  ) : (
+                    "Analyze Sentiment"
+                  )}
+                </Button>
+
+                {/* Sentiment Results */}
+                {sentimentResult && (
+                  <div className="mt-6 p-4 rounded-lg border-2 bg-primary/5">
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-sm font-medium text-muted-foreground">Detected Sentiment:</span>
+                      <div className="flex items-center gap-2">
+                        {sentimentResult.sentiment === "Positive" ? (
+                          <TrendingUp className="h-5 w-5 text-green-500" />
+                        ) : (
+                          <TrendingDown className="h-5 w-5 text-red-500" />
+                        )}
+                        <Badge
+                          variant={sentimentResult.sentiment === "Positive" ? "default" : "destructive"}
+                          className="text-base px-3 py-1"
+                        >
+                          {sentimentResult.sentiment}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-muted-foreground">Confidence:</span>
+                        <span className="text-xl font-bold">
+                          {(sentimentResult.sentiment_score * 100).toFixed(2)}%
+                        </span>
+                      </div>
+                      <div className="w-full bg-secondary rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all ${
+                            sentimentResult.sentiment === "Positive" ? "bg-green-500" : "bg-red-500"
+                          }`}
+                          style={{ width: `${sentimentResult.sentiment_score * 100}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="mt-4 pt-4 border-t space-y-3">
+                      <div>
+                        <span className="text-xs font-medium text-muted-foreground block mb-1">
+                          Processed Text:
+                        </span>
+                        <p className="text-sm bg-background p-2 rounded-md font-mono">
+                          {sentimentResult.cleaned_text}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Sentiment Error */}
+                {sentimentError && (
+                  <div className="mt-4 p-4 rounded-lg border-2 border-destructive bg-destructive/5">
+                    <div className="flex items-center gap-3 text-destructive">
+                      <AlertTriangle className="h-5 w-5" />
+                      <div>
+                        <p className="font-medium">Sentiment Analysis Failed</p>
+                        <p className="text-sm text-muted-foreground mt-1">{sentimentError}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

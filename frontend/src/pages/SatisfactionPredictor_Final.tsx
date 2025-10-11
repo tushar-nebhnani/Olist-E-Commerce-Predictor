@@ -325,6 +325,7 @@ const SatisfactionPredictorFinal = () => {
               </div>
             </CardContent>
           </Card>
+          
         </div>
       </main>
     </div>
