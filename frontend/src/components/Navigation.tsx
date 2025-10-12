@@ -55,7 +55,7 @@ const Navigation = () => {
       <div className="container mx-auto px-6 h-16 flex items-center justify-between">
         <Link to="/" className="flex items-center space-x-2">
           <h1 className="text-xl font-bold bg-gradient-to-r from-primary via-primary/80 to-primary/60 bg-clip-text text-transparent">
-            Olist ML Insights Dashboard
+            Olist ML Dashboard
           </h1>
         </Link>
         
