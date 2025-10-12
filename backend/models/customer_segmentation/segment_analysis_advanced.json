@@ -1,22 +1,82 @@
 {
     "0": {
-        "persona": "Champions",
-        "size": 89280,
-        "percentage": "97.0%",
-        "avg_recency": 240.3,
+        "persona": "Needs Attention",
+        "size": 10828,
+        "percentage": "11.6%",
+        "avg_recency_days": 126.1,
         "avg_frequency": 1.0,
-        "avg_monetary": 160.9,
-        "avg_tenure_days": 240.3,
+        "avg_monetary": 307.23,
+        "avg_tenure_days": 126.1,
         "avg_interpurchase_time_days": 0.0
     },
     "1": {
+        "persona": "Needs Attention",
+        "size": 31856,
+        "percentage": "34.1%",
+        "avg_recency_days": 376.1,
+        "avg_frequency": 1.0,
+        "avg_monetary": 84.73,
+        "avg_tenure_days": 376.1,
+        "avg_interpurchase_time_days": 0.0
+    },
+    "2": {
+        "persona": "Needs Attention",
+        "size": 1792,
+        "percentage": "1.9%",
+        "avg_recency_days": 191.4,
+        "avg_frequency": 2.0,
+        "avg_monetary": 295.75,
+        "avg_tenure_days": 309.0,
+        "avg_interpurchase_time_days": 117.1
+    },
+    "3": {
+        "persona": "Needs Attention",
+        "size": 780,
+        "percentage": "0.8%",
+        "avg_recency_days": 291.8,
+        "avg_frequency": 2.0,
+        "avg_monetary": 276.08,
+        "avg_tenure_days": 291.9,
+        "avg_interpurchase_time_days": 0.0
+    },
+    "4": {
+        "persona": "Potential Loyalists",
+        "size": 15301,
+        "percentage": "16.4%",
+        "avg_recency_days": 321.0,
+        "avg_frequency": 1.0,
+        "avg_monetary": 333.55,
+        "avg_tenure_days": 321.0,
+        "avg_interpurchase_time_days": 0.0
+    },
+    "5": {
         "persona": "At-Risk",
-        "size": 2744,
-        "percentage": "3.0%",
-        "avg_recency": 222.4,
-        "avg_frequency": 2.11,
-        "avg_monetary": 308.45,
-        "avg_tenure_days": 309.8,
-        "avg_interpurchase_time_days": 80.0
+        "size": 13121,
+        "percentage": "14.1%",
+        "avg_recency_days": 33.0,
+        "avg_frequency": 1.0,
+        "avg_monetary": 149.32,
+        "avg_tenure_days": 33.0,
+        "avg_interpurchase_time_days": 0.0
+    },
+    "6": {
+        "persona": "Needs Attention",
+        "size": 19429,
+        "percentage": "20.8%",
+        "avg_recency_days": 149.1,
+        "avg_frequency": 1.0,
+        "avg_monetary": 70.63,
+        "avg_tenure_days": 149.1,
+        "avg_interpurchase_time_days": 0.0
+    },
+    "7": {
+        "persona": "Champions",
+        "size": 228,
+        "percentage": "0.2%",
+        "avg_recency_days": 202.3,
+        "avg_frequency": 3.4,
+        "avg_monetary": 506.79,
+        "avg_tenure_days": 359.9,
+        "avg_interpurchase_time_days": 68.7
     }
 }

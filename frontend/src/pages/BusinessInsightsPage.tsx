@@ -2,15 +2,96 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Badge } from "@/components/ui/badge";
 import { 
   DollarSign, MapPin, Star, Truck, ShoppingBag, CreditCard, TrendingUp, Users, Store, 
-  BarChartHorizontal, Clock, CheckCircle, Package, CalendarDays, Hourglass, AlertCircle, Lightbulb, Repeat, Sparkles, UserX
+  BarChartHorizontal, Clock, CheckCircle, Package, CalendarDays, Hourglass, AlertCircle, Lightbulb, Repeat, Sparkles, UserX, UserCheck
 } from "lucide-react";
-import Navigation from "@/components/Navigation";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, BarChart, CartesianGrid, XAxis, YAxis, Tooltip as RechartsTooltip, Bar as RechartsBar } from 'recharts';
+import Navigation from "@/components/Navigation";
 
-// --- Reusable Bar Component for Hover Cards ---
+const rawSegmentData = {
+    "0": { "persona": "Needs Attention", "size": 10828, "percentage": "11.6%", "avg_recency_days": 126.1, "avg_frequency": 1.0, "avg_monetary": 307.23, "avg_tenure_days": 126.1, "avg_interpurchase_time_days": 0.0 },
+    "1": { "persona": "Needs Attention", "size": 31856, "percentage": "34.1%", "avg_recency_days": 376.1, "avg_frequency": 1.0, "avg_monetary": 84.73, "avg_tenure_days": 376.1, "avg_interpurchase_time_days": 0.0 },
+    "2": { "persona": "Needs Attention", "size": 1792, "percentage": "1.9%", "avg_recency_days": 191.4, "avg_frequency": 2.0, "avg_monetary": 295.75, "avg_tenure_days": 309.0, "avg_interpurchase_time_days": 117.1 },
+    "3": { "persona": "Needs Attention", "size": 780, "percentage": "0.8%", "avg_recency_days": 291.8, "avg_frequency": 2.0, "avg_monetary": 276.08, "avg_tenure_days": 291.9, "avg_interpurchase_time_days": 0.0 },
+    "4": { "persona": "Potential Loyalists", "size": 15301, "percentage": "16.4%", "avg_recency_days": 321.0, "avg_frequency": 1.0, "avg_monetary": 333.55, "avg_tenure_days": 321.0, "avg_interpurchase_time_days": 0.0 },
+    "5": { "persona": "At-Risk", "size": 13121, "percentage": "14.1%", "avg_recency_days": 33.0, "avg_frequency": 1.0, "avg_monetary": 149.32, "avg_tenure_days": 33.0, "avg_interpurchase_time_days": 0.0 },
+    "6": { "persona": "Needs Attention", "size": 19429, "percentage": "20.8%", "avg_recency_days": 149.1, "avg_frequency": 1.0, "avg_monetary": 70.63, "avg_tenure_days": 149.1, "avg_interpurchase_time_days": 0.0 },
+    "7": { "persona": "Champions", "size": 228, "percentage": "0.2%", "avg_recency_days": 202.3, "avg_frequency": 3.4, "avg_monetary": 506.79, "avg_tenure_days": 359.9, "avg_interpurchase_time_days": 68.7 }
+};
+
+// --- Segment Processing and Color Mapping ---
+const SEGMENT_COLORS_RAW = [
+  'hsl(142 71% 45%)',    // 0: Green (Champions)
+  'hsl(48 96% 50%)',     // 1: Yellow (Potential Loyalists)
+  'hsl(0 84% 60%)',      // 2: Red (At-Risk)
+  'hsl(210 40% 70%)',    // 3: Light Blue (High Value/Lapsed)
+  'hsl(210 60% 50%)',    // 4: Mid Blue (Low Value/New Opportunity - Focus)
+  'hsl(210 80% 30%)',    // 5: Dark Blue (Dormant/Churn Risk - Largest Segment)
+  'hsl(240 40% 60%)',    // 6: Purple/Indigo (Multi-Purchase/Dormant)
+  'hsl(210 40% 10%)',    // 7: Catch-All
+];
+
+const segmentData = Object.keys(rawSegmentData).map((key, index) => {
+    const segment = rawSegmentData[key];
+    
+    // --- Initial Color Mapping (Priority based) ---
+    let colorIndex = index; // Default to index for unique colors
+    // Assign primary colors based on recognized personas from backend scoring logic
+    if (segment.persona === 'Champions') colorIndex = 0;
+    else if (segment.persona === 'Potential Loyalists') colorIndex = 1;
+    else if (segment.persona === 'At-Risk') colorIndex = 2;
+    
+    // Assign a clearer name for the display
+    let displayName = segment.persona;
+    
+    // --- REFINED LOGIC FOR 'NEEDS ATTENTION' CLUSTERS (Actionable Grouping) ---
+    if (segment.persona === 'Needs Attention') {
+        // Cluster 1 (34.1%): Dormant (R>300) and Lowest Monetary (<100). --> True Dormant Risk.
+        if (key === "1") {
+            displayName = "Dormant/Churn Risk";
+            colorIndex = 5; // Dark Blue - High Risk/Low Priority for spend
+        } 
+        // Cluster 0 (11.6%) and Cluster 4 (16.4%) (High Monetary, Moderate/Old Recency)
+        // C4 is handled by the backend as 'Potential Loyalists'. We refine C0 here.
+        else if (key === "0" || key === "4") {
+            // C4 is already 'Potential Loyalists' (R=321, M=333) due to backend logic, so it gets Yellow (index 1).
+            // We refine C0 (R=126, M=307) which is High Value but Lapsed (not repeat).
+            displayName = key === "0" ? "High Value/Lapsed" : segment.persona;
+            colorIndex = key === "0" ? 3 : 1; // Light Blue - High Re-engagement Opportunity
+        }
+        // Cluster 6 (20.8%): Low Monetary (M=70), Recent Recency (R=149 days). --> Immediate Low-Cost Upsell Opportunity.
+        else if (key === "6") {
+            displayName = "Low Value/New Opportunity";
+            colorIndex = 4; // Mid Blue - High Volume, High Opportunity
+        }
+        // Cluster 2, 3 (Multi-purchase but Dormant)
+        else {
+             displayName = "Multi-Purchase/Dormant";
+             colorIndex = 6; // Purple/Indigo - Complex Re-engagement
+        }
+    }
+    // --- END REFINED LOGIC ---
+
+    return {
+        id: key,
+        name: displayName,
+        count: segment.size,
+        percentage: segment.percentage,
+        color: SEGMENT_COLORS_RAW[colorIndex],
+        recency: segment.avg_recency_days,
+        frequency: segment.avg_frequency,
+        monetary: segment.avg_monetary,
+        tenure: segment.avg_tenure_days,
+        interpurchase: segment.avg_interpurchase_time_days,
+        persona: segment.persona,
+        icon: segment.persona === 'Champions' ? UserCheck : segment.persona === 'At-Risk' ? UserX : Users,
+        // Used to order the segments consistently
+        score_rank: segment.persona === 'Champions' ? 1 : segment.persona === 'Potential Loyalists' ? 2 : segment.persona === 'At-Risk' ? 8 : 4
+    };
+}).sort((a, b) => a.score_rank - b.score_rank);
+
+// --- Utility Components (Unchanged) ---
 const Bar = ({ label, value, maxValue, unit = "", colorClass = "bg-primary" }: { label: string, value: number | string, maxValue: number, unit?: string, colorClass?: string }) => {
   const displayValue = typeof value === 'number' ? value.toLocaleString() : value;
   const widthValue = typeof value === 'number' ? value : 0;
@@ -30,7 +111,7 @@ const Bar = ({ label, value, maxValue, unit = "", colorClass = "bg-primary" }: {
   );
 };
 
-// --- SVG Brazil Map Component ---
+// --- SVG Brazil Map Component (Unchanged) ---
 const BrazilMap = () => (
     <svg viewBox="0 0 500 500" className="w-full h-auto drop-shadow-lg">
         <path d="M250 20 L150 50 L100 150 L120 250 L100 350 L150 450 L250 480 L350 450 L400 350 L380 250 L400 150 L350 50 Z" fill="hsl(var(--card))" className="opacity-80 stroke-primary/20 stroke-2" />
@@ -112,41 +193,23 @@ const InsightCard = ({ children }: { children: React.ReactNode }) => (
   </Card>
 );
 
-// --- Segmentation Data ---
-const segmentData = [
-  { 
-    name: 'Single-Purchase Core',
-    icon: Users,
-    description: "The vast majority of your customer base. They have made a single purchase and form the foundation of your business.",
-    action: "Encourage a second purchase through targeted follow-ups with related products or introductory offers for new categories.",
-    count: 89280, 
-    recency: 240.3,
-    frequency: 1.0,
-    monetary: 160.9
-  },
-  { 
-    name: 'At-Risk Loyalists',
-    icon: UserX,
-    description: "A small, high-value segment of repeat customers who spend more but have not purchased recently.",
-    action: "Target immediately with 'We miss you!' campaigns and personalized incentives to prevent churn.",
-    count: 2744,
-    recency: 222.4,
-    frequency: 2.11,
-    monetary: 308.45
-  },
-];
-
-const SEGMENT_COLORS = [
-  'hsl(var(--primary))',
-  'hsl(var(--chart-2))',
-];
-
-const SEGMENT_FILLS = [
-  'hsl(var(--primary) / 0.1)',
-  'hsl(var(--chart-2) / 0.1)',
-];
 
 const BusinessInsights = () => {
+    // --- Chart Helpers ---
+    const maxRecency = Math.max(...segmentData.map(d => d.recency));
+    const maxFrequency = Math.max(...segmentData.map(d => d.frequency));
+    const maxMonetary = Math.max(...segmentData.map(d => d.monetary));
+    
+    // Data for bar chart comparison (Recency, Frequency, Monetary)
+    const comparisonData = segmentData.map(s => ({
+        name: s.name,
+        Recency: s.recency,
+        Frequency: s.frequency,
+        Monetary: s.monetary,
+        color: s.color, // Carry color information for bar fill
+    }));
+
+
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
@@ -495,84 +558,110 @@ const BusinessInsights = () => {
               {/* Segment Distribution Chart */}
               <Card className="bg-gradient-to-br from-card to-card/50 backdrop-blur hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:scale-[1.01]">
                 <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-primary" />
-                    <CardTitle>Segment Distribution</CardTitle>
+                  <div className="flex items-center gap-3">
+                    <TrendingUp className="w-6 h-6 text-primary" />
+                    <CardTitle>Customer Segment Distribution (Optimal K=8)</CardTitle>
                   </div>
-                  <CardDescription>The proportion of total customers in each segment.</CardDescription>
+                  <CardDescription>GMM results showing the market share and key metrics for all 8 segments.</CardDescription>
                 </CardHeader>
-                <CardContent className="h-[300px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={segmentData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={110}
-                        fill="hsl(var(--primary))"
-                        dataKey="count"
-                        nameKey="name"
-                      >
-                        {segmentData.map((_entry, index) => (
-                          <Cell key={`cell-${index}`} fill={SEGMENT_COLORS[index]} />
+                <CardContent className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div className="lg:col-span-1 h-[300px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                              <Pie
+                                data={segmentData}
+                                cx="50%"
+                                cy="50%"
+                                labelLine={false}
+                                outerRadius={100}
+                                fill="hsl(var(--primary))"
+                                dataKey="count"
+                                nameKey="name"
+                              >
+                                {segmentData.map((entry) => (
+                                  <Cell key={`cell-${entry.id}`} fill={entry.color} />
+                                ))}
+                              </Pie>
+                              <RechartsTooltip 
+                                formatter={(value, name, props) => [`${(value as number).toLocaleString()} customers`, props.payload.name]}
+                                contentStyle={{ 
+                                  backgroundColor: 'hsl(var(--card))', 
+                                  border: '1px solid hsl(var(--border))',
+                                  borderRadius: '8px'
+                                }}
+                                labelFormatter={(label, props) => `Segment: ${props[0].payload.id}`}
+                              />
+                              <Legend layout="vertical" align="right" verticalAlign="middle" wrapperStyle={{ fontSize: '12px' }} />
+                            </PieChart>
+                          </ResponsiveContainer>
+                    </div>
+                    <div className="lg:col-span-2 space-y-3">
+                        <div className="bg-muted/30 p-4 rounded-lg border border-border/50">
+                            <h4 className="font-semibold text-sm mb-2 text-primary">ML Rationale (BIC)</h4>
+                            <p className="text-xs text-muted-foreground">The model used the **Bayesian Information Criterion (BIC)** to statistically justify $K=8$ as the optimal number of segments, balancing model fit against complexity. This ensures the segmentation is robust and non-overfit.</p>
+                        </div>
+                         {/* Displaying Key Segments separately */}
+                        {segmentData.filter(s => ['Champions', 'Potential Loyalists', 'At-Risk'].includes(s.persona)).map((segment) => (
+                            <div key={segment.id} className={`p-3 rounded-lg border flex items-center justify-between transition-shadow duration-300`} 
+                                style={{ 
+                                    backgroundColor: segment.persona === 'Champions' ? 'hsl(142 71% 45% / 0.1)' : segment.persona === 'At-Risk' ? 'hsl(0 84% 60% / 0.1)' : 'hsl(48 96% 50% / 0.1)',
+                                    borderColor: segment.color,
+                                }}
+                            >
+                                <div className="flex items-center gap-3">
+                                    <segment.icon className="w-5 h-5" style={{ color: segment.color }} />
+                                    <div>
+                                        <p className="font-bold text-sm" style={{ color: segment.color }}>{segment.persona} (Cluster {segment.id})</p>
+                                        <p className="text-xs text-muted-foreground">{segment.percentage} of customers</p>
+                                    </div>
+                                </div>
+                                <div className="text-right text-xs">
+                                    <p className="font-medium">R: {segment.recency.toFixed(0)} days</p>
+                                    <p className="font-medium">M: ${segment.monetary.toFixed(0)}</p>
+                                </div>
+                            </div>
                         ))}
-                      </Pie>
-                      <RechartsTooltip 
-                        formatter={(value) => `${(value as number).toLocaleString()} customers`}
-                        contentStyle={{ 
-                          backgroundColor: 'hsl(var(--card))', 
-                          border: '1px solid hsl(var(--border))',
-                          borderRadius: '8px'
-                        }}
-                      />
-                      <Legend />
-                    </PieChart>
-                  </ResponsiveContainer>
+                    </div>
                 </CardContent>
               </Card>
 
-              {/* Segment Profiles */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {segmentData.map((segment, index) => (
-                  <Card key={segment.name} className="flex flex-col bg-gradient-to-br from-card to-card/50 backdrop-blur hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:scale-[1.02]">
-                    <CardHeader>
-                      <div className="flex items-center gap-3 mb-2">
+              {/* Segment Profiles - Render All Segments */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {segmentData.map((segment) => (
+                  <Card key={segment.id} className="flex flex-col hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center gap-3 mb-1">
                         <div 
                           className="p-2 rounded-lg" 
-                          style={{ backgroundColor: SEGMENT_FILLS[index] }}
+                          style={{ backgroundColor: `${segment.color}15` }} // Light background from segment color
                         >
-                          <segment.icon className="w-5 h-5" style={{ color: SEGMENT_COLORS[index] }} />
+                          <segment.icon className="w-5 h-5" style={{ color: segment.color }} />
                         </div>
-                        <CardTitle className="text-xl">{segment.name}</CardTitle>
+                        <CardTitle className="text-lg" style={{ color: segment.color }}>{segment.name}</CardTitle>
                       </div>
-                      <CardDescription>{segment.description}</CardDescription>
+                      <CardDescription className="text-xs">Cluster {segment.id} | {segment.percentage} of base</CardDescription>
                     </CardHeader>
-                    <CardContent className="flex-grow space-y-4">
-                      <div>
-                        <h4 className="font-semibold text-sm mb-3 flex items-center gap-2">
-                          <Sparkles className="w-4 h-4 text-primary" />
-                          Key Characteristics
-                        </h4>
-                        <div className="grid grid-cols-3 gap-2 text-center text-sm">
-                          <div className="p-3 rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-border/50">
-                            <div className="font-bold text-lg text-primary">{segment.recency.toFixed(0)}</div>
-                            <div className="text-xs text-muted-foreground mt-1">days<br/>Recency</div>
-                          </div>
-                          <div className="p-3 rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-border/50">
-                            <div className="font-bold text-lg text-primary">{segment.frequency.toFixed(1)}</div>
-                            <div className="text-xs text-muted-foreground mt-1">purchases<br/>Frequency</div>
-                          </div>
-                          <div className="p-3 rounded-lg bg-gradient-to-br from-muted to-muted/50 border border-border/50">
-                            <div className="font-bold text-lg text-primary">${segment.monetary.toFixed(0)}</div>
-                            <div className="text-xs text-muted-foreground mt-1">average<br/>Monetary</div>
-                          </div>
+                    <CardContent className="flex-grow space-y-2 text-sm">
+                        <div className="flex justify-between items-center text-muted-foreground">
+                            <span className="flex items-center gap-1"><Clock className="w-3 h-3"/> Recency</span>
+                            <span className="font-bold text-foreground">{segment.recency.toFixed(0)} days</span>
                         </div>
-                      </div>
-                      <div className="p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-                        <h4 className="font-semibold text-sm mb-2 text-primary">Recommended Action</h4>
-                        <p className="text-sm text-muted-foreground">{segment.action}</p>
-                      </div>
+                        <div className="flex justify-between items-center text-muted-foreground">
+                            <span className="flex items-center gap-1"><Repeat className="w-3 h-3"/> Frequency</span>
+                            <span className="font-bold text-foreground">{segment.frequency.toFixed(1)} purchases</span>
+                        </div>
+                        <div className="flex justify-between items-center text-muted-foreground">
+                            <span className="flex items-center gap-1"><DollarSign className="w-3 h-3"/> Monetary</span>
+                            <span className="font-bold text-foreground">${segment.monetary.toFixed(0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-muted-foreground">
+                            <span className="flex items-center gap-1"><Hourglass className="w-3 h-3"/> Interpurchase</span>
+                            <span className="font-bold text-foreground">{segment.interpurchase.toFixed(1)} days</span>
+                        </div>
+                        <div className="flex justify-between items-center text-muted-foreground">
+                            <span className="flex items-center gap-1"><CalendarDays className="w-3 h-3"/> Tenure</span>
+                            <span className="font-bold text-foreground">{segment.tenure.toFixed(0)} days</span>
+                        </div>
                     </CardContent>
                   </Card>
                 ))}
@@ -582,34 +671,38 @@ const BusinessInsights = () => {
               <Card className="bg-gradient-to-br from-card to-card/50 backdrop-blur hover:shadow-2xl hover:border-primary/50 transition-all duration-300 hover:scale-[1.01]">
                 <CardHeader>
                   <div className="flex items-center gap-2">
-                    <TrendingUp className="w-5 h-5 text-primary" />
-                    <CardTitle>Segment Comparison (Averages)</CardTitle>
+                    <BarChartHorizontal className="w-5 h-5 text-primary" />
+                    <CardTitle>Segment Comparison (RFM Averages)</CardTitle>
                   </div>
-                  <CardDescription>Comparing the average RFM values across all segments.</CardDescription>
+                  <CardDescription>Comparing the key RFM features across the 8 statistically derived segments.</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[400px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={segmentData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }} barGap={50}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                    <BarChart data={comparisonData} margin={{ top: 5, right: 20, left: 10, bottom: 90 }} barGap={5}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" vertical={false} />
                       <XAxis 
                         dataKey="name" 
                         stroke="hsl(var(--muted-foreground))" 
                         fontSize={12} 
                         tickLine={false}
                         axisLine={false}
+                        angle={-45}
+                        textAnchor="end"
+                        interval={0}
                       />
                       <YAxis stroke="hsl(var(--muted-foreground))" fontSize={12} />
                       <RechartsTooltip 
+                        formatter={(value, name) => [name === 'Monetary' ? `$${(value as number).toFixed(2)}` : (value as number).toFixed(1), name]}
                         contentStyle={{ 
                           backgroundColor: 'hsl(var(--card))', 
                           border: '1px solid hsl(var(--border))',
                           borderRadius: '8px'
                         }}
                       />
-                      <Legend />
-                      <RechartsBar dataKey="recency" fill={SEGMENT_COLORS[0]} name="Recency (days)" radius={[8, 8, 0, 0]} />
-                      <RechartsBar dataKey="frequency" fill={SEGMENT_COLORS[1]} name="Frequency" radius={[8, 8, 0, 0]} />
-                      <RechartsBar dataKey="monetary" fill="hsl(var(--primary))" name="Monetary ($)" radius={[8, 8, 0, 0]} />
+                      <Legend verticalAlign="top" height={36}/>
+                      <RechartsBar dataKey="Recency" fill={SEGMENT_COLORS_RAW[4]} name="Recency (days)" radius={[4, 4, 0, 0]} />
+                      <RechartsBar dataKey="Frequency" fill={SEGMENT_COLORS_RAW[1]} name="Frequency (units)" radius={[4, 4, 0, 0]} />
+                      <RechartsBar dataKey="Monetary" fill={SEGMENT_COLORS_RAW[0]} name="Monetary ($)" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </CardContent>
@@ -617,12 +710,12 @@ const BusinessInsights = () => {
 
               <InsightCard>
                 <div className="space-y-1">
-                  <p className="font-semibold text-foreground">🔍 Observation:</p>
-                  <p>Customer segmentation reveals that 97% of customers are "Single-Purchase Core" buyers, while a small 3% "At-Risk Loyalists" segment represents repeat buyers with significantly higher spending but declining engagement.</p>
+                  <p className="font-semibold text-foreground">🔍 Observation (GMM $K=8$):</p>
+                  <p>The segmentation confirms that ~98% of the customer base are single-purchase buyers (Clusters 0, 1, 4, 5, 6), which highlights an overwhelming need for retention. The **Champions (Cluster 7)**, though tiny ($0.2\%$), are responsible for the highest Monetary value and Frequency, representing the peak of the loyalty funnel.</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="font-semibold text-foreground">💡 Suggestion:</p>
-                  <p>Launch a two-pronged strategy: For Single-Purchase Core customers, implement automated follow-up campaigns with personalized product recommendations to drive second purchases. For At-Risk Loyalists, create urgent win-back campaigns with exclusive offers to prevent churn of these high-value customers.</p>
+                  <p className="font-semibold text-foreground">💡 Strategy (Targeted Intervention):</p>
+                  <p>Intervention must be prioritized by segment value. The At-Risk segment (Cluster 5) is critical: they were recently active ($\text{}=33$ days), but are slipping away. Launch immediate, exclusive, personalized win-back campaigns to prevent churn of this crucial segment before they become lost.</p>
                 </div>
               </InsightCard>
             </TabsContent>
