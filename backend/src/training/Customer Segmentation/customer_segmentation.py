@@ -1,3 +1,4 @@
+# Libraries to import
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,6 +18,7 @@ logging.basicConfig(
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
+# For Production
 # Define file paths using Python's 'pathlib' for OS-agnostic deployment.
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 DATA_PATH = PROJECT_ROOT / "data"
@@ -25,7 +27,7 @@ OUTPUTS_PATH = PROJECT_ROOT / "models" / "customer_segmentation"
 # Ensure the output directory exists to store the final model artifact and results.
 OUTPUTS_PATH.mkdir(parents=True, exist_ok=True)
 
-
+# Merging Of Dataset
 def load_and_merge_data(path: Path) -> pd.DataFrame:
     """Loads and merges the necessary pre-cleaned data files."""
     logging.info("Loading orders, customers, and payments data...")
@@ -100,6 +102,7 @@ def engineer_features(df: pd.DataFrame, rfm_df: pd.DataFrame) -> pd.DataFrame:
     
     return features_df
 
+# Bic Calculation to ensure the correct number of segements
 def plot_bic_elbow(bic_values: list, max_k: int):
     """Generates and saves the BIC Elbow Plot for K optimization."""
     plt.figure(figsize=(10, 6))
@@ -114,7 +117,7 @@ def plot_bic_elbow(bic_values: list, max_k: int):
     logging.info(f"BIC Elbow Plot saved to '{plot_file}'")
     plt.close()
 
-
+# TO check the number of optimal clusters
 def find_optimal_clusters(scaled_data: np.ndarray, max_k: int = 8) -> tuple[int, GaussianMixture]:
     """Finds the optimal K using GMM and the Bayesian Information Criterion (BIC)."""
     logging.info("Finding optimal K with GMM and BIC...")
