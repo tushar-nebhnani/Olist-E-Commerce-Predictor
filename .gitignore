@@ -1,3 +1,4 @@
 .env
 .git
 LICENSE
+__pycache__
