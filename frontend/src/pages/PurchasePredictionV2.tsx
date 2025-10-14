@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, Sparkles, LoaderCircle, AlertTriangle, ShoppingCart, Percent, ThumbsUp, ThumbsDown, ClipboardList, BarChart4 } from "lucide-react";
-import axios from 'axios'; 
+import axios from 'axios';
 
 interface PredictionResult {
   purchase_probability: number;
@@ -15,7 +15,7 @@ interface PredictionResult {
 const v2ReportFull = {
   "Not Purchased (0)": { precision: 0.99, recall: 0.90, "f1-score": 0.94, support: 94556 },
   "Purchased (1)": { precision: 0.70, recall: 0.95, "f1-score": 0.81, support: 23910 },
-  "accuracy": { precision: null, recall: null, "f1-score": 0.91, support: 118466 }, // Accuracy as f1-score here represents overall accuracy
+  "accuracy": { precision: null, recall: null, "f1-score": 0.91, support: 118466 }, // This is kept for reference but will be filtered out in the UI
   "macro avg": { precision: 0.84, recall: 0.92, "f1-score": 0.87, support: 118466 },
   "weighted avg": { precision: 0.93, recall: 0.91, "f1-score": 0.91, support: 118466 }
 };
@@ -58,7 +58,6 @@ const PurchasePredictorV2 = () => {
     const errorHandler = (error: any) => {
       if (error.response) {
         console.error('API Error:', error.response.data);
-        // Throw an error with the detailed message for the UI
         throw new Error(error.response.data.detail || error.response.data.message || 'An error occurred on the server.');
       } else if (error.request) {
         console.error('Network Error:', error.request);
@@ -104,7 +103,7 @@ const PurchasePredictorV2 = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [formData, api]); // Dependency array includes 'api' and 'formData'
+  }, [formData, api]);
 
   const stateOptions = ["SP", "RJ", "MG", "RS", "PR", "SC", "BA", "DF", "ES", "GO", "PE", "CE", "PA", "MT", "MA", "MS", "PB", "PI", "RN", "AL", "SE", "TO", "RO", "AM", "AC", "AP", "RR"].sort().map(s => <SelectItem key={s} value={s}>{s}</SelectItem>);
   
@@ -202,17 +201,20 @@ const PurchasePredictorV2 = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(v2ReportFull).map(([key, value]) => (
-                      <tr key={key} className="border-b border-primary/10 last:border-b-0">
-                        <td className="px-4 py-2 font-semibold capitalize">{key.replace(/_/g, ' ')}</td>
-                        <td className="px-4 py-2 text-center">{value.precision !== null ? value.precision.toFixed(2) : '—'}</td>
-                        <td className="px-4 py-2 text-center">{value.recall !== null ? value.recall.toFixed(2) : '—'}</td>
-                        <td className="px-4 py-2 text-center">
-                          {key === 'accuracy' ? value['f1-score'].toFixed(2) : (value['f1-score'] !== null ? value['f1-score'].toFixed(2) : '—')}
-                        </td>
-                        <td className="px-4 py-2 text-center text-muted-foreground">{value.support.toLocaleString()}</td>
-                      </tr>
-                    ))}
+                    {Object.entries(v2ReportFull)
+                      .filter(([key]) => key !== 'accuracy') // MODIFIED: Filter out the 'accuracy' row
+                      .map(([key, value]) => (
+                        <tr key={key} className="border-b border-primary/10 last:border-b-0">
+                          <td className="px-4 py-2 font-semibold capitalize">{key.replace(/_/g, ' ')}</td>
+                          <td className="px-4 py-2 text-center">{value.precision !== null ? value.precision.toFixed(2) : '—'}</td>
+                          <td className="px-4 py-2 text-center">{value.recall !== null ? value.recall.toFixed(2) : '—'}</td>
+                          <td className="px-4 py-2 text-center">
+                            {/* MODIFIED: Simplified the logic */}
+                            {value['f1-score'] !== null ? value['f1-score'].toFixed(2) : '—'}
+                          </td>
+                          <td className="px-4 py-2 text-center text-muted-foreground">{value.support.toLocaleString()}</td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
@@ -222,7 +224,6 @@ const PurchasePredictorV2 = () => {
             </CardContent>
           </Card>
 
-          {/* --- Feature Importance (Placeholder) --- */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><BarChart4 className="w-5 h-5 text-primary" />Feature Importance</CardTitle>
@@ -249,9 +250,8 @@ const PurchasePredictorV2 = () => {
             </CardHeader>
             <CardContent>
               <div className="grid md:grid-cols-3 gap-6">
-                <div className="md:col-span-2">
+                <div className="md-col-span-2">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {/* Render input fields from formData state */}
                     {Object.entries(formData).map(([key, value]) => (
                       <div key={key} className="space-y-1">
                         <Label htmlFor={key} className="capitalize text-xs">{key.replace(/_/g, ' ')}</Label>

@@ -6,16 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Brain, ShoppingCart, LoaderCircle, AlertTriangle, Percent, ThumbsUp, ThumbsDown, ClipboardList } from "lucide-react";
-import { api } from "@/services/api"; 
+import { api } from "@/services/api";
 
 interface PredictionResult {
   purchase_probability: number;
 }
 
+// Data for the classification report
 const v1ReportFull = {
   "Not Purchased (0)": { precision: 0.83, recall: 0.99, "f1-score": 0.90, support: 95760 },
   "Purchased (1)": { precision: 0.82, recall: 0.20, "f1-score": 0.32, support: 23937 },
-  "accuracy": { precision: null, recall: null, "f1-score": 0.83, support: 119697 },
+  "accuracy": { precision: null, recall: null, "f1-score": 0.83, support: 119697 }, // This is kept for reference but will be filtered out in the UI
   "macro avg": { precision: 0.82, recall: 0.59, "f1-score": 0.61, support: 119697 },
   "weighted avg": { precision: 0.83, recall: 0.83, "f1-score": 0.79, support: 119697 }
 };
@@ -55,24 +56,15 @@ const PurchasePredictorV1 = () => {
     setResult(null);
 
     try {
-      // 🚀 Use the imported api utility function (Axios wrapper)
       const data = await api.predictPurchaseV1(formData);
-      
-      // Axios handles JSON parsing and non-2xx errors are caught automatically
       setResult(data);
-      
     } catch (err: any) {
-      // ⚠️ Catch the error thrown by the axios instance or the api.errorHandler
       let errorMessage = 'An unknown error occurred.';
-
       if (err.message) {
-        // This will capture the error message set by api.errorHandler
         errorMessage = err.message;
       } else if (err.response?.data?.detail) {
-        // A fallback for direct axios error structure
         errorMessage = err.response.data.detail;
       }
-      
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -156,7 +148,6 @@ const PurchasePredictorV1 = () => {
             </CardContent>
           </Card>
 
-          {/* --- UPDATED: Full Classification Report Card --- */}
           <Card className="border-2">
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><ClipboardList className="w-5 h-5 text-primary" />Classification Report</CardTitle>
@@ -175,17 +166,20 @@ const PurchasePredictorV1 = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(v1ReportFull).map(([key, value]) => (
-                      <tr key={key} className="border-b border-primary/10 last:border-b-0">
-                        <td className="px-4 py-2 font-semibold capitalize">{key}</td>
-                        <td className="px-4 py-2 text-center">{value.precision !== null ? value.precision.toFixed(2) : '—'}</td>
-                        <td className="px-4 py-2 text-center">{value.recall !== null ? value.recall.toFixed(2) : '—'}</td>
-                        <td className="px-4 py-2 text-center">
-                          {key === 'accuracy' ? value['f1-score'].toFixed(2) : (value['f1-score'] !== null ? value['f1-score'].toFixed(2) : '—')}
-                        </td>
-                        <td className="px-4 py-2 text-center text-muted-foreground">{value.support.toLocaleString()}</td>
-                      </tr>
-                    ))}
+                    {Object.entries(v1ReportFull)
+                      .filter(([key]) => key !== 'accuracy') // MODIFIED: Filter out the 'accuracy' row
+                      .map(([key, value]) => (
+                        <tr key={key} className="border-b border-primary/10 last:border-b-0">
+                          <td className="px-4 py-2 font-semibold capitalize">{key}</td>
+                          <td className="px-4 py-2 text-center">{value.precision !== null ? value.precision.toFixed(2) : '—'}</td>
+                          <td className="px-4 py-2 text-center">{value.recall !== null ? value.recall.toFixed(2) : '—'}</td>
+                          <td className="px-4 py-2 text-center">
+                            {/* MODIFIED: Simplified the logic, no need for the 'accuracy' special case */}
+                            {value['f1-score'] !== null ? value['f1-score'].toFixed(2) : '—'}
+                          </td>
+                          <td className="px-4 py-2 text-center text-muted-foreground">{value.support.toLocaleString()}</td>
+                        </tr>
+                      ))}
                   </tbody>
                 </table>
               </div>
