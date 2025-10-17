@@ -45,6 +45,7 @@ const Navigation = () => {
   const additionalLinks = [
     { path: "/business-insights", label: "Business Insights" },
     { path: "/product-recommendation", label: "Product Recommendations" },
+    { path: "/segmentation-cluster", label: "Segmentation" },
   ];
 
   const isSatisfactionActive = location.pathname.startsWith("/satisfaction-predictor");
